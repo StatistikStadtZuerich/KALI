@@ -5,10 +5,12 @@ library(dplyr)
 library(lubridate)
 library(icons)
 library(xlsx)
-library(nycflights13)
 
 # Source Donwload Function
 source("sszDownload.R", local = TRUE)
+
+# Source Prepared Data
+source("prepareData.R", local = TRUE, encoding = "UTF-8")
 
 # Set the Icon path
 icon <- icon_set("icons/")
