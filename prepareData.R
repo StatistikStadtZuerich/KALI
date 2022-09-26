@@ -17,6 +17,7 @@ package.check <- lapply(
 )
 
 ## Join data
+# df has information about candidates (incumbent status is only in this df)
 data_2022 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2022_kandidierende/download/gemeinderatswahlen_2022_kandidierende.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2022) %>% rename(Nachname = X.U.FEFF.Nachname)
 data_2018 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2018-alle-kandidierenden/download/GRW-2018-alle-Kandidierenden-OGD.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2018)
 data_2014 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2014-alle-kandidierenden/download/GRW-2014-alle-Kandidierenden-OGD.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2014)
@@ -35,6 +36,7 @@ rm(data_2022, data_2018, data_2014, data_2010, data_2006)
 
 
 ### Load Data
+# df with information about result of election
 data22 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2022_resultate/download/GRW_2022_resultate_kandidierende_und_herkunft_der_stimmen.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2022)
 data18 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2018_resultate/download/GRW_2018_Resultate_und_herkunft_der_stimmen.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2018)
 data14 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2014-resultate/download/GRW_2014_Resultate_und_Herkunft_der_Stimmen_Nachzahlung_v2.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2014)
@@ -68,7 +70,11 @@ data <- df %>%
   left_join(df_det, by = c("Wahljahr", "Vorname", "Nachname", "Wahlkreis", "ListeBezeichnung")) %>% 
   mutate(
     Name = paste(Vorname, Nachname, sep = " ")
-  )
+  ) %>% 
+  mutate(
+    Wahlkreis = paste("Kreis", Wahlkreis, sep = " ")
+  ) %>% 
+  mutate(Alter = Wahljahr - GebJ)
 
 
 

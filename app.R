@@ -102,7 +102,7 @@ ui <- fluidPage(
                 # Example radioButtons() vertical
                 tags$div(
                     class = "Status",
-                    radioButtons(inputId = "ButtonGroupLabel2",
+                    radioButtons(inputId = "ButtonGroupLabel21",
                                  label = "Status:",
                                  choices = c("Alle", "gewählt", "nicht gewählt"),
                                  selected = "Alle" # default value
@@ -120,7 +120,7 @@ ui <- fluidPage(
                 # Example radioButtons() vertical
                 tags$div(
                     class = "Status",
-                    radioButtons(inputId = "ButtonGroupLabel2",
+                    radioButtons(inputId = "ButtonGroupLabel22",
                                  label = "Status:",
                                  choices = c("Alle", "gewählt", "nicht gewählt"),
                                  selected = "Alle" # default value

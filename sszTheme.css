@@ -157,9 +157,16 @@ a:hover {
   letter-spacing: 0.01em;
   text-align: left;
 }
-
-/* Control Label Font (Radio Button 2 Title) */
-#ButtonGroupLabel2-label {
+#ButtonGroupLabel21-label {
+  font-family: HelveticaNeueLTW01_55Roman;
+  color: #646464;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 19px;
+  letter-spacing: 0.01em;
+  text-align: left;
+}
+#ButtonGroupLabel22-label {
   font-family: HelveticaNeueLTW01_55Roman;
   color: #646464;
   font-weight: 400;
