@@ -158,6 +158,17 @@ a:hover {
   text-align: left;
 }
 
+/* Control Label Font (Radio Button 2 Title) */
+#ButtonGroupLabel2-label {
+  font-family: HelveticaNeueLTW01_55Roman;
+  color: #646464;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 19px;
+  letter-spacing: 0.01em;
+  text-align: left;
+}
+
 /* Control Label (Text Input) */
 #suchfeld-label.control-label {
     top: 14px;
@@ -212,6 +223,42 @@ a:hover {
     padding-right: 2px;
 }
 
+/* Control Label (Select Input2) */
+#select2-label.control-label {
+    top: 14px;
+    font-family: 'HelveticaNeueLTW01_55Roman';
+    font-weight: 400;
+    color: #646464;
+    font-size: 12px;
+    line-height: 19px;
+    letter-spacing: 0.01em;
+    text-align: left;
+    position: relative;
+    left: 16px;
+    z-index: 10;
+    background-color: white;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+/* Control Label (Select Input3) */
+#select3-label.control-label {
+    top: 14px;
+    font-family: 'HelveticaNeueLTW01_55Roman';
+    font-weight: 400;
+    color: #646464;
+    font-size: 12px;
+    line-height: 19px;
+    letter-spacing: 0.01em;
+    text-align: left;
+    position: relative;
+    left: 16px;
+    z-index: 10;
+    background-color: white;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
 /* General Label*/
 .label {
   font-weight: 100;
@@ -223,6 +270,30 @@ a:hover {
 }
 
 #ButtonGroupLabel {
+  margin-top: 10px;
+}
+
+/* Radio Buttons Text */
+.radio span {
+  padding-left: 0.7em;
+  display: inline-block;
+  font-family: HelveticaNeueLTW01_55Roman;
+}
+
+.radio label {
+  color: #646464;
+}
+
+.radio label:hover {
+  color: #030033;
+  transition: 0.7s;
+}
+
+.radio label:active {
+  color: #080490;
+}
+
+#ButtonGroupLabel2 {
   margin-top: 10px;
 }
 

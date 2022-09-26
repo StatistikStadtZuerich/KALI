@@ -5,6 +5,7 @@ library(dplyr)
 library(lubridate)
 library(icons)
 library(xlsx)
+library(htmltools)
 
 # Source Donwload Function
 source("sszDownload.R", local = TRUE)
@@ -15,11 +16,6 @@ source("prepareData.R", local = TRUE, encoding = "UTF-8")
 # Set the Icon path
 icon <- icon_set("icons/")
 
-# Example Data
-data <- flights %>% 
-    mutate(date = ymd(paste(year, month, day, sep = "-"))) %>%
-    select(tailnum, date, dest, origin, distance) %>% 
-    sample_n(300)
 
 # Define UI
 ui <- fluidPage(
@@ -28,7 +24,7 @@ ui <- fluidPage(
     includeCSS("sszTheme.css"),
     
     # Application Title 
-    titlePanel("Name Shiny App"),
+    titlePanel("Kandidierendenlisten App"),
     
     # Sidebar: Input widgets are placed here
     sidebarLayout(
@@ -37,34 +33,114 @@ ui <- fluidPage(
             # Example textInput()
             textInput("suchfeld", "Name:"),
             
-            # Example dateRangeInput()
-            dateRangeInput("DateRange", "Datum:",
-                           start  =  min(data$date), # default start date
-                           end    =  max(data$date), # default end date
-                           min    =  min(data$date), # minimum allowed date
-                           max    =  max(data$date), # maximum allowed date
-                           format = "dd.mm.yyyy",
-                           language = "de",
-                           separator = icon("calendar")),
-            
-            # Example selectInput()
-            selectInput("select", "Destination:", 
-                        choices = unique(data$dest),
-                        selected = "LAX"),
-            
+        
             # Example radioButtons() vertical
             tags$div(
-                class = "radioDiv",
+                class = "Status",
                 radioButtons(inputId = "ButtonGroupLabel",
-                             label = "Flughafen:",
-                             choices = unique(data$origin),
-                             selected = "JFK" # default value
+                             # inline = TRUE,
+                             label = "Geschlecht:",
+                             choices = c("Alle", "Männlich", "Weiblich"),
+                             selected = "Alle" # default value
                 )
             ),
             
-            # Example actionButton()
-            actionButton(inputId = "ActionButtonId",
-                         label = "Abfrage starten"),
+            # Example selectInput()
+            selectInput("select", "Gemeinderatswahlen:", 
+                        choices = unique(df$Wahljahr)),
+            
+            # Example selectInput()
+            selectInput("select2", "Wahlkreis:", 
+                        choices = c("Ganz Stadt", unique(df$Wahlkreis)),
+                        selected = "Ganz Stadt"),
+            
+            
+            conditionalPanel(
+                condition = 'input.select == "2022"',
+                
+                # Example selectInput()
+                selectInput("select3", "Liste:", 
+                            choices = c("Alle Listen", unique(df[df$Wahljahr == 2022,]$ListeBezeichnung)),
+                            selected = "Alle Listen"),
+                
+                # Example radioButtons() vertical
+                tags$div(
+                    class = "Status",
+                    radioButtons(inputId = "ButtonGroupLabel2",
+                                 label = "Status:",
+                                 choices = c("Alle", "gewählt", "nicht gewählt"),
+                                 selected = "Alle" # default value
+                    )
+                ),
+            ),
+            conditionalPanel(
+                condition = 'input.select == "2018"',
+                
+                # Example selectInput()
+                selectInput("select3", "Liste:", 
+                            choices = c("Alle Listen", unique(df[df$Wahljahr == 2018,]$ListeBezeichnung)),
+                            selected = "Alle Listen"),
+                
+                # Example radioButtons() vertical
+                tags$div(
+                    class = "Status",
+                    radioButtons(inputId = "ButtonGroupLabel2",
+                                 label = "Status:",
+                                 choices = c("Alle", "gewählt", "nicht gewählt"),
+                                 selected = "Alle" # default value
+                    )
+                ),
+            ),
+            conditionalPanel(
+                condition = 'input.select == "2014"',
+
+                # Example selectInput()
+                selectInput("select3", "Liste:", 
+                            choices = c("Alle Listen", unique(df[df$Wahljahr == 2014,]$ListeBezeichnung)),
+                            selected = "Alle Listen"),
+                
+                # Example radioButtons() vertical
+                tags$div(
+                    class = "Status",
+                    radioButtons(inputId = "ButtonGroupLabel2",
+                                 label = "Status:",
+                                 choices = c("Alle", "gewählt", "nicht gewählt"),
+                                 selected = "Alle" # default value
+                    )
+                ),
+            ),
+            conditionalPanel(
+                condition = 'input.select == "2010"',
+
+                # Example selectInput()
+                selectInput("select3", "Liste:", 
+                            choices = c("Alle Listen", unique(df[df$Wahljahr == 2010,]$ListeBezeichnung)),
+                            selected = "Alle Listen"),
+                
+                # Example radioButtons() vertical
+                tags$div(
+                    class = "Status",
+                    radioButtons(inputId = "ButtonGroupLabel2",
+                                 label = "Status:",
+                                 choices = c("Alle", "gewählt", "nicht gewählt"),
+                                 selected = "Alle" # default value
+                    )
+                ),
+            ),
+            
+            
+            
+            # Action Button
+            conditionalPanel(
+                condition = 'input.ActionButtonId==0',
+                
+                actionButton("ActionButtonId",
+                             "Abfrage starten")
+            ),
+            conditionalPanel(
+                condition = 'input.ActionButtonId>0',
+                
+            ),
             
             # Example Download Button
             h3("Daten herunterladen"),
@@ -91,21 +167,26 @@ ui <- fluidPage(
         # Mail Panel: Outputs are placed here
         mainPanel(
             
-            # Example Title h1
-            h1("Titel der Tabelle"),
-            hr(),
+            conditionalPanel(
+                condition = 'output.table',
+                
+                # Define subtitle
+                tags$div(
+                    class = "infoDiv",
+                    p("Die untenstehenden Kandidierenden entsprechen Ihren Suchkriterien. Für Detailinformationen wählen Sie eine Person aus.")
+                ),
+                hr(),
+            ),
             
             # Example Table Output 
             reactableOutput("table"),
             
-            # Example Title h2
-            h2("Untertitel des Outputs"),
+            # Name of selected person
+            htmlOutput("text"),
             
-            # Example Title h3
-            h3("Unter-Untertitel des Outputs"),
+            # Details about selected person
+            reactableOutput("table2")
             
-            # Example Text Paragraph
-            p("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."),
             
         )
     )
@@ -115,26 +196,38 @@ ui <- fluidPage(
 # Server function
 server <- function(input, output) {
     
+    # First button click to activate search, after not necessary anymore
+    global <- reactiveValues(activeButton = FALSE)
+    
+    observeEvent(input$ActionButtonId, {
+        req(input$ActionButtonId)
+        global$activeButton <- TRUE
+    })
     
     # Filter data according to inputs
     filteredData <- reactive({
+        req(global$activeButton == TRUE)
         
         # Filter: No Search
         if(input$suchfeld == "") {
             filtered <- data %>%
-                dplyr::filter(date >= input$DateRange[1] & date <= input$DateRange[2]) %>% 
-                filter(dest == input$select) %>% 
-                filter(origin == input$ButtonGroupLabel) 
+                filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
+                filter(Wahljahr == input$select) %>% 
+                filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE) %>% 
+                filter(if(input$select3 != "Alle Listen") ListeBezeichnung == input$select3 else TRUE) %>% 
+                filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
             
             filtered
             
             # Filter: With Search   
         } else {
             filtered <- data %>%
-                filter(grepl(input$suchfeld, tailnum, ignore.case=TRUE)) %>%
-                dplyr::filter(date >= input$DateRange[1] & date <= input$DateRange[2]) %>% 
-                filter(dest == input$select) %>% 
-                filter(origin == input$ButtonGroupLabel)
+                filter(grepl(input$suchfeld, Name, ignore.case=TRUE)) %>%
+                filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
+                filter(Wahljahr == input$select) %>% 
+                filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE)  %>% 
+                filter(if(input$select3 != "Alle Listen") ListeBezeichnung == input$select3 else TRUE) %>% 
+                filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
             
             filtered
             
@@ -144,34 +237,126 @@ server <- function(input, output) {
     
     # Reactable Output
     output$table <- renderReactable({
-        tableOutput <- reactable(filteredData(),
-                                 paginationType = "simple",
-                                 language = reactableLang(
-                                     noData = "Keine Einträge gefunden",
-                                     pageNumbers = "{page} von {pages}",
-                                     pageInfo = "{rowStart} bis {rowEnd} von {rows} Einträgen",
-                                     pagePrevious = "\u276e",
-                                     pageNext = "\u276f",
-                                     pagePreviousLabel = "Vorherige Seite",
-                                     pageNextLabel = "Nächste Seite"
-                                 ),
+        tableOutput <- reactable(filteredData() %>%
+                                     select(Name, Geschlecht, GebJ, Beruf, Wahlkreis) %>% 
+                                     unique()
+                                  ,
+                                  paginationType = "simple",
+                                  language = reactableLang(
+                                      noData = "Keine Einträge gefunden",
+                                      pageNumbers = "{page} von {pages}",
+                                      pageInfo = "{rowStart} bis {rowEnd} von {rows} Einträgen",
+                                      pagePrevious = "\u276e",
+                                      pageNext = "\u276f",
+                                      pagePreviousLabel = "Vorherige Seite",
+                                      pageNextLabel = "Nächste Seite"
+                                      
+                                  ),
+                                  theme = reactableTheme(
+                                      borderColor = "#DEDEDE"
+                                  ),
                                  defaultColDef = colDef(
                                      align = "left",
                                      minWidth = 50
                                  ),
-                                 theme = reactableTheme(
-                                     borderColor = "#DEDEDE"
-                                 ),
-                                 outlined = TRUE,
-                                 highlight = FALSE,
-                                 defaultPageSize = 5,
-                                 onClick = "select",
-                                 selection = "single",
-                                 rowClass = JS("function(rowInfo) {return rowInfo.selected ? 'selected' : ''}"),
-                                 rowStyle = JS("function(rowInfo) {if (rowInfo.selected) { return { backgroundColor: '#F2F2F2'}}}")
+                                  outlined = TRUE,
+                                  highlight = TRUE,
+                                  defaultPageSize = 5,
+                                  onClick = "select",
+                                  selection = "single",
+                                  rowClass = JS("function(rowInfo) {return rowInfo.selected ? 'selected' : ''}"),
+                                  rowStyle = JS("function(rowInfo) {if (rowInfo.selected) { return { backgroundColor: '#F2F2F2'}}}")
         )
+        tableOutput
     })
     
+    # Prepare data for second Output
+    rowNumber <- reactive( {
+        getReactableState("voteList", "selected")
+    })
+    
+    
+    namePerson <- reactive({
+        req(rowNumber())
+        
+        person <- filteredData() %>%
+            select(Name, Wahlkreis, GebJ) %>%
+            unique() %>%
+            mutate(ID = row_number()) %>%
+            filter(ID == rowNumber())
+        
+        print(person$Name)
+    })
+    
+    nameWahlkreis <- reactive({
+        req(rowNumber())
+        
+        person <- filteredData() %>%
+            select(Name, Wahlkreis, GebJ) %>%
+            unique() %>%
+            mutate(ID = row_number()) %>%
+            filter(ID == rowNumber())
+        
+        print(person$Wahlkreis)
+    })
+    
+    nameGebJ <- reactive({
+        req(rowNumber())
+        
+        person <- filteredData() %>%
+            select(Name, Wahlkreis, GebJ) %>%
+            unique() %>%
+            mutate(ID = row_number()) %>%
+            filter(ID == rowNumber())
+        
+        print(person$GebJ)
+    })
+    
+    
+    # voteData <- reactive({
+    #     req(namePerson())
+    #     
+    #     vote <- filteredData() %>%
+    #         filter(Name == namePerson() & GebJ == nameGebJ() & Wahlkreis == nameWahlkreis()) %>%
+    #         select(ListeBezeichnung, Wahlresultat, total_stim, part_eig_stim, part_eig_stim_unv_wl, part_frmd_stim)
+    # })
+    
+    output$text <- renderText({
+        req(namePerson())
+        
+        paste("<h3>", print(rowNumber()), "</h3>")
+    })
+    
+    # output$table <- renderReactable({
+    #     req(namePerson())
+    #     
+    #     tableOutput <- reactable(voteData(),
+    #                              paginationType = "simple",
+    #                              language = reactableLang(
+    #                                  noData = "Keine Einträge gefunden",
+    #                                  pageNumbers = "{page} von {pages}",
+    #                                  pageInfo = "{rowStart} bis {rowEnd} von {rows} Einträgen",
+    #                                  pagePrevious = "\u276e",
+    #                                  pageNext = "\u276f",
+    #                                  pagePreviousLabel = "Vorherige Seite",
+    #                                  pageNextLabel = "Nächste Seite"
+    #                              ),
+    #                              defaultColDef = colDef(
+    #                                  align = "left",
+    #                                  minWidth = 50
+    #                              ),
+    #                              theme = reactableTheme(
+    #                                  borderColor = "#DEDEDE"
+    #                              ),
+    #                              outlined = TRUE,
+    #                              highlight = FALSE,
+    #                              defaultPageSize = 5,
+    #                              onClick = "select",
+    #                              selection = "single",
+    #                              rowClass = JS("function(rowInfo) {return rowInfo.selected ? 'selected' : ''}"),
+    #                              rowStyle = JS("function(rowInfo) {if (rowInfo.selected) { return { backgroundColor: '#F2F2F2'}}}")
+    #     )
+    # })
     
     # Render data download
     # CSV

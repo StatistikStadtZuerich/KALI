@@ -24,7 +24,12 @@ data_2010 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik-gemeinderat
 data_2006 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2006-alle-kandidierenden/download/GRW-2006-alle-Kandidierenden-OGD.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2006)
 
 df <- data_2022 %>% 
-  bind_rows(data_2018, data_2014, data_2010, data_2006)
+  bind_rows(data_2018, data_2014, data_2010, data_2006) %>% 
+  mutate(G = case_when(
+    G == "M" ~ "Männlich",
+    G == "W" ~ "Weiblich"
+  )) %>% 
+  rename(Geschlecht = G)
 
 rm(data_2022, data_2018, data_2014, data_2010, data_2006)
 
@@ -42,8 +47,8 @@ data_prep <- function(data){
   data %>% 
     select(Wahljahr, Liste_Bez_lang, Wahlkreis, Nachname, Vorname, Wahlresultat, total_stim, starts_with("part"), starts_with("stim")) %>% 
     gather(Var, Value, -Wahljahr, -Liste_Bez_lang, -Wahlkreis, -Nachname, -Vorname, -Wahlresultat, -total_stim, -starts_with("part")) %>% 
-    mutate(Value = as.numeric(Value))
-    
+    mutate(Value = as.numeric(Value)) %>% 
+    rename(ListeBezeichnung = Liste_Bez_lang)
 }
 
 
@@ -58,6 +63,12 @@ df_det <- df22 %>%
 rm(data22, data18, data14, data10, df22, df18, df14, df10)
 
 
+### Join df_det with df
+data <- df %>% 
+  left_join(df_det, by = c("Wahljahr", "Vorname", "Nachname", "Wahlkreis", "ListeBezeichnung")) %>% 
+  mutate(
+    Name = paste(Vorname, Nachname, sep = " ")
+  )
 
 
 
