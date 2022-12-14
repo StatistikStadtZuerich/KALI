@@ -15,7 +15,7 @@ var CHART_CONTAINER_ID = "#sszvis-chart";
 var queryProps = sszvis
           .responsiveProps()
           .prop("yLabel", {
-            _: "Beschäftigte",
+            _: "Anzahl Stimmen",
           })
           .prop("ticks", {
             _: 5,
@@ -23,7 +23,7 @@ var queryProps = sszvis
 
 function parseRow(d) {
   return {
-    category: d["Var"],
+    category: d["StimmeVeraeListe"],
     // No need to parse numbers, as the data sent from Shiny is already ok.
     xValue: d["Value"],
   };

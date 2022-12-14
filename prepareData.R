@@ -80,7 +80,8 @@ rm(data22, data18, data14, data10, df22, df18, df14, df10)
 
 
 ### Join df_det with df
-data <- df %>% 
+data <- df %>%
+  select(-Liste ,-Kand, -Kand, -X.U.FEFF.A) %>% 
   left_join(df_det, by = c("Wahljahr", "Vorname", "Nachname", "Wahlkreis", "ListeBezeichnung")) %>% 
   mutate(
     Name = paste(Vorname, Nachname, sep = " ")
@@ -105,11 +106,48 @@ data <- df %>%
     Wahlresultat == "gewaehlt" ~ "gewählt",
     TRUE ~Wahlresultat
   )) %>% 
-  mutate(Alter = Wahljahr - GebJ)
+  mutate(Alter = Wahljahr - GebJ) %>% 
+  mutate(StimmeVeraeListe = str_remove_all(Var, "stim_verae_wl_")) %>% 
+  mutate(StimmeVeraeListe = case_when(
+    StimmeVeraeListe == "Gruene" ~ "Grüne",
+    StimmeVeraeListe == "evp_bdp" ~ "EVP/BDP",
+    StimmeVeraeListe == "DieMitte" ~ "Die Mitte",
+    StimmeVeraeListe == "ILoveZH" ~ "I Love ZH",
+    TRUE ~ StimmeVeraeListe
+  )) %>% 
+  mutate(`Anteil Stimmen aus veränderten Listen` = as.character(round(100*(1-(part_eig_stim/total_stim)),1))) %>% 
+  mutate(
+    `Anteil Stimmen aus veränderten Listen` = paste(`Anteil Stimmen aus veränderten Listen`, "%", sep = " ")
+  ) %>% 
+  rename(Liste = ListeKurzbez,
+         `Anzahl Stimmen` = total_stim,
+         `Parteieigene Stimmen` = part_eig_stim,
+         `Parteifremde Stimmen` = part_frmd_stim
+         ) 
 
-data_cand <- data %>% 
-  select(-total_stim, -part_eig_stim, -part_eig_stim_unv_wl, -part_frmd_stim, -Var, -Value) %>% 
-  distinct()
+
+
+# data_cand <- data %>% 
+#   select(-total_stim, -part_eig_stim, -part_eig_stim_unv_wl, -part_frmd_stim, -Var, -Value) %>% 
+#   distinct()
 
 # matched <- data %>%  group_by(Wahljahr, ListeKurzbez) %>% mutate(nomatch = sum(is.na(total_stim)), count = n()) %>%  select(Wahljahr, ListeKurzbez, count, nomatch) %>% unique()
 # ss <- data %>% filter(Wahljahr == 2018 & is.na(total_stim)) 
+
+# 
+# filtered <- data %>%
+#   filter(Wahljahr == 2019) %>%
+#   filter(Geschlecht == "Weiblich") %>%
+#   filter(Wahlkreis == "Kreis 1 + 2")  %>%
+#   filter(ListeBezeichnung == "glp - Grünliberale Partei") %>%
+#   filter(Wahlresultat == "nicht gewählt")
+# nrow(filtered)
+# 
+# 
+# person <- filteredData() %>%
+#   filter()
+#   select(Name, Var, Value) %>%
+#   unique() %>%
+#   mutate(ID = row_number()) %>%
+#   filter(ID == rowNumber())
+# person

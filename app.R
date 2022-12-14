@@ -179,6 +179,8 @@ ui <- fluidPage(
             # Name of selected candidate
             htmlOutput("nameCandidate"),
             
+            reactableOutput("tableCand"),
+            
             chart_container
         )
     )
@@ -250,10 +252,15 @@ server <- function(input, output, session) {
                 filtered
             
             }
-    }) %>% 
-        # necessary to get reactive data in D3 chart
-        bindCache(input$ActionButtonId, input$select, input$ButtonGroupLabel) %>%
-        bindEvent(input$ActionButtonId, input$select, input$ButtonGroupLabel)
+    }) 
+    # %>%
+    #     # necessary to get reactive data in D3 chart
+    #     bindCache(input$ActionButtonId, input$select, input$suchfeld, input$ButtonGroupLabel,
+    #               input$select2, input$select31, input$select32, input$select33,
+    #               input$select34, input$ButtonGroupLabel2) %>%
+    #     bindEvent(input$ActionButtonId, input$select, input$suchfeld, input$ButtonGroupLabel,
+    #               input$select2, input$select31, input$select32, input$select33,
+    #               input$select34, input$ButtonGroupLabel2)
     
     
     # Reactable Output
@@ -262,7 +269,7 @@ server <- function(input, output, session) {
         req(global$activeButton == TRUE)
         
         tableOutput <- reactable(filteredData() %>%
-                                     select(Name, Geschlecht, GebJ, Beruf, Wahlkreis) %>% 
+                                     select(Name, Alter, Geschlecht, Beruf, Wahlkreis, Liste) %>% 
                                      unique()
                                   ,
                                   paginationType = "simple",
@@ -300,38 +307,92 @@ server <- function(input, output, session) {
     })
     
     
-    namePerson <- reactive({
-        req(rowNumber())
-        
-        person <- filteredData() %>%
-            select(Name, Wahlkreis, GebJ) %>%
-            unique() %>%
-            mutate(ID = row_number()) %>%
-            filter(ID == rowNumber())
-        
-        print(person$Name)
-    })
-    
     dataPerson <- reactive({
+        req(filteredData())
         req(rowNumber())
         
         person <- filteredData() %>%
-            select(Name, Var, Value) %>%
+            select(Name, Wahlkreis, ListeBezeichnung, Wahlresultat, 
+                   `Anzahl Stimmen`, `Parteieigene Stimmen`, `Parteifremde Stimmen`,
+                   `Anteil Stimmen aus veränderten Listen`) %>%
             unique() %>%
             mutate(ID = row_number()) %>%
             filter(ID == rowNumber())
         person
+
+    })
+    
+    namePerson <- reactive({
+        req(nrow(dataPerson())>0)
+        
+        person <- dataPerson()
+        
+        print(person$Name)
+    })
+    
+    nameWahlkreis <- reactive({
+        req(nrow(dataPerson())>0)
+        
+        person <- dataPerson()
+        
+        print(person$Wahlkreis)
+    })
+    nameListe <- reactive({
+        req(nrow(dataPerson())>0)
+        
+        person <- dataPerson()
+        
+        print(person$ListeBezeichnung)
+    })
+    
+    dataBarchart <- reactive({
+        req(nrow(dataPerson())>0)
+        
+        person <- filteredData() %>%
+            filter(Name == namePerson()) %>% 
+            filter(Wahlkreis == nameWahlkreis()) %>% 
+            filter(ListeBezeichnung == nameListe()) %>% 
+            select(Name, StimmeVeraeListe, Value) %>% 
+            filter(!is.na(Value)) %>% 
+            arrange(desc(Value))
+        person
         
     })
     
-    
+  
     output$nameCandidate <- renderText({
         req(namePerson())
         
+        if(!is.null(namePerson())){
         paste("<br><h2>", print(namePerson()), "</h2><hr>")
+        }else{}
     })
     
-    observe({ update_data(dataPerson()) })
+    output$tableCand <- renderReactable({
+        req(namePerson())
+
+        CandInfo <- dataPerson() %>%
+            select(-Name, -Wahlkreis, -ListeBezeichnung, -ID) %>% 
+            gather(Stimmenzusammensetzung, Wert)
+
+
+        tableOutput <- reactable(CandInfo,
+                                 paginationType = "simple",
+                                 theme = reactableTheme(
+                                     borderColor = "#DEDEDE"
+                                 ),
+                                 defaultColDef = colDef(
+                                     align = "left",
+                                     minWidth = 50
+                                 ),
+                                 outlined = TRUE,
+                                 highlight = TRUE
+        )
+        tableOutput
+    })
+
+    
+    observe({ update_data(dataBarchart()) })
     
     
     # Render data download
