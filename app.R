@@ -46,27 +46,24 @@ ui <- fluidPage(
         sidebarPanel(
             
             # Example textInput()
-            textInput("suchfeld", "Name:"),
+            sszTextInput("suchfeld", "Name:"),
             
         
             # Example radioButtons() vertical
-            tags$div(
-                class = "radioDiv",
-                radioButtons(inputId = "ButtonGroupLabel",
-                             # inline = TRUE,
-                             label = "Geschlecht:",
-                             choices = c("Alle", "Männlich", "Weiblich"),
-                             selected = "Alle" # default value
-                )
-            ),
+            sszRadioButtons("ButtonGroupLabel",
+                            label = "Geschlecht:",
+                            choices = c("Alle", "Männlich", "Weiblich"),
+                            selected = "Alle" # default value
+                            ),
             
             # Example selectInput()
-            selectInput("select", "Gemeinderatswahlen:", 
+            sszSelectInput("select", "Gemeinderatswahlen:", 
                         choices = unique(data$Wahljahr)),
             
             # Example selectInput()
-            selectInput("select2", "Wahlkreis:", 
-                        choices = c("Ganz Stadt", unique(data$Wahlkreis)),
+            sszSelectInput("select2", "Wahlkreis:", 
+                        choices = c("Ganz Stadt", "Kreis 1 + 2", "Kreis 3", "Kreis 4 + 5", "Kreis 6",
+                                    "Kreis 7 + 8", "Kreis 9", "Kreis 10", "Kreis 11", "Kreis 12"),
                         selected = "Ganz Stadt"),
             
             
@@ -74,7 +71,7 @@ ui <- fluidPage(
                 condition = 'input.select == "2022"',
                 
                 # Example selectInput()
-                selectInput("select31", "Liste:", 
+                sszSelectInput("select31", "Liste:", 
                             choices = c("Alle Listen", unique(data[data$Wahljahr == 2022,]$ListeBezeichnung)),
                             selected = "Alle Listen"),
             ),
@@ -82,7 +79,7 @@ ui <- fluidPage(
                 condition = 'input.select == "2018"',
                 
                 # Example selectInput()
-                selectInput("select32", "Liste:", 
+                sszSelectInput("select32", "Liste:", 
                             choices = c("Alle Listen", unique(data[data$Wahljahr == 2018,]$ListeBezeichnung)),
                             selected = "Alle Listen"),
             ),
@@ -90,7 +87,7 @@ ui <- fluidPage(
                 condition = 'input.select == "2014"',
 
                 # Example selectInput()
-                selectInput("select33", "Liste:", 
+                sszSelectInput("select33", "Liste:", 
                             choices = c("Alle Listen", unique(data[data$Wahljahr == 2014,]$ListeBezeichnung)),
                             selected = "Alle Listen"),
             ),
@@ -98,30 +95,26 @@ ui <- fluidPage(
                 condition = 'input.select == "2010"',
 
                 # Example selectInput()
-                selectInput("select34", "Liste:", 
+                sszSelectInput("select34", "Liste:", 
                             choices = c("Alle Listen", unique(data[data$Wahljahr == 2010,]$ListeBezeichnung)),
                             selected = "Alle Listen"),
                 
             ),
             
             # Example radioButtons() vertical
-            tags$div(
-                class = "Status",
-                radioButtons(inputId = "ButtonGroupLabel2",
-                             label = "Status:",
-                             choices = c("Alle", "gewählt", "nicht gewählt"),
-                             selected = "Alle" # default value
-                )
-            ),
-            
+            sszRadioButtons("ButtonGroupLabel2",
+                            label = "Status:",
+                            choices = c("Alle", "gewählt", "nicht gewählt"),
+                            selected = "Alle" 
+                            ),
             
             
             # Action Button
             conditionalPanel(
                 condition = 'input.ActionButtonId==0',
                 
-                actionButton("ActionButtonId",
-                             "Abfrage starten")
+                sszActionButton("ActionButtonId",
+                                "Abfrage starten")
             ),
             conditionalPanel(
                 condition = 'input.ActionButtonId>0',
@@ -391,7 +384,6 @@ server <- function(input, output, session) {
     #         # hide("chart_container")
     #     }
     # })
-    # 
   
     output$nameCandidate <- renderText({
         req(namePerson())
