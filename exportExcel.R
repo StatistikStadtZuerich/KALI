@@ -12,10 +12,10 @@ sszDownloadExcel <- function(filteredData, file, nameVote){
     data <- data %>%
       mutate(
         Date = ifelse(is.na(Date), NA, paste0(format(Sys.Date(), "%d"), ".", format(Sys.Date(), "%m"), ".", format(Sys.Date(), "%Y"))),
-        Titel = ifelse(is.na(Titel), NA, paste0("Abstimmungsresultate für Ihre Auswahl: ", nameVote))
+        Titel = ifelse(is.na(Titel), NA, paste0("Resultat der Gemeinderatswahlen für Ihre Auswahl: ", nameVote))
         )
     
-    selected <- list(c("T_1", "Abstimmungsresultate für Ihre Auswahl:", paste(nameVote), " ", " ","Quelle: Statistik Stadt Zürich, Präsidialdepartement")) %>% 
+    selected <- list(c("T_1", "Resultat der Gemeinderatswahlen für Ihre Auswahl:", paste(nameVote), " ", " ","Quelle: Statistik Stadt Zürich, Präsidialdepartement")) %>% 
       as.data.frame()
       
     # Data Sheet 2

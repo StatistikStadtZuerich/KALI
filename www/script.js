@@ -11,7 +11,7 @@ Global variables exposed by Shiny (dependencies): d3, sszvis
 // -----------------------------------------------
 // Matches the one set in Shiny.
 var CHART_CONTAINER_ID = "#sszvis-chart";
-/*var MAX_WIDTH = 800;*/
+/*var MAX_WIDTH = 3000;*/
 var queryProps = sszvis
           .responsiveProps()
           .prop("yLabel", {
@@ -82,7 +82,7 @@ function render(state) {
     CHART_CONTAINER_ID
   );
 
-  var chartWidth = Math.min(bounds.innerWidth, 800);
+  var chartWidth = Math.min(bounds.innerWidth, 2000);
 
   // Scales
 

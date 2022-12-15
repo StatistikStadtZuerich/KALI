@@ -10,7 +10,7 @@ library(icons)
 library(shiny)
 library(htmltools)
 library(zuericssstyle)
-# get_shiny_css()
+#get_shiny_css()
 
 # Source Prepared Data
 source("prepareData.R", encoding = "UTF-8")
@@ -19,7 +19,7 @@ source("prepareData.R", encoding = "UTF-8")
 source("exportExcel.R", encoding = "UTF-8")
 
 # Source Dependencies
-source("dependencies.R")
+source("dependencies.R", encoding = "UTF-8")
 
 dependencies <- getDependencies()
 chart_container <- tags$div(id="sszvis-chart")
@@ -51,7 +51,7 @@ ui <- fluidPage(
         
             # Example radioButtons() vertical
             tags$div(
-                class = "Status",
+                class = "radioDiv",
                 radioButtons(inputId = "ButtonGroupLabel",
                              # inline = TRUE,
                              label = "Geschlecht:",
@@ -130,7 +130,7 @@ ui <- fluidPage(
             
             # Downloads
             conditionalPanel(
-                condition = 'output.selectedVote',
+                condition = 'output.tableCand',
                 h3("Daten herunterladen"),
                 
                 # Download Panel
@@ -308,7 +308,7 @@ server <- function(input, output, session) {
     
     
     dataPerson <- reactive({
-        req(filteredData())
+        req(nrow(filteredData())>0)
         req(rowNumber())
         
         person <- filteredData() %>%
@@ -317,9 +317,28 @@ server <- function(input, output, session) {
                    `Anteil Stimmen aus veränderten Listen`) %>%
             unique() %>%
             mutate(ID = row_number()) %>%
-            filter(ID == rowNumber())
+            filter(ID == rowNumber()) %>% 
+            select(-ID)
         person
 
+    })
+    
+    dataDownload <- reactive({
+        req(nrow(filteredData())>0)
+        req(rowNumber())
+        
+        person <- filteredData() %>%
+            select(Wahljahr, Name, Alter, Geschlecht, Beruf, Wahlkreis, Liste, Wahlresultat, 
+                   `Anzahl Stimmen`, `Parteieigene Stimmen`, `Parteifremde Stimmen`,
+                   `Anteil Stimmen aus veränderten Listen`) %>%
+            unique() %>%
+            mutate(ID = row_number()) %>%
+            filter(ID == rowNumber()) %>% 
+            select(-ID) %>% 
+            gather(`Result der Wahl`, Wert, -Wahljahr, -Name, -Alter, -Geschlecht, 
+                   -Beruf, -Wahlkreis, -Liste)
+        person
+        
     })
     
     namePerson <- reactive({
@@ -346,19 +365,33 @@ server <- function(input, output, session) {
     })
     
     dataBarchart <- reactive({
-        req(nrow(dataPerson())>0)
+        req(dataPerson())
         
         person <- filteredData() %>%
             filter(Name == namePerson()) %>% 
             filter(Wahlkreis == nameWahlkreis()) %>% 
             filter(ListeBezeichnung == nameListe()) %>% 
             select(Name, StimmeVeraeListe, Value) %>% 
-            filter(!is.na(Value)) %>% 
+            filter(!is.na(Value) & Value > 0) %>% 
             arrange(desc(Value))
         person
         
     })
     
+    # not show further information if nothing is selected
+    # does weird stuff
+    # observe({
+    #     if (nrow(dataPerson())>0) {
+    #         show("nameCandidate")
+    #         show("tableCand")
+    #         # show("chart_container")
+    #     } else {
+    #         hide("nameCandidate")
+    #         hide("tableCand")
+    #         # hide("chart_container")
+    #     }
+    # })
+    # 
   
     output$nameCandidate <- renderText({
         req(namePerson())
@@ -369,11 +402,11 @@ server <- function(input, output, session) {
     })
     
     output$tableCand <- renderReactable({
-        req(namePerson())
+        req(nrow(dataPerson())>0)
 
         CandInfo <- dataPerson() %>%
-            select(-Name, -Wahlkreis, -ListeBezeichnung, -ID) %>% 
-            gather(Stimmenzusammensetzung, Wert)
+            select(-Name, -Wahlkreis, -ListeBezeichnung) %>% 
+            gather(`Detailinformationen zu den erhaltenen Stimmen`, Wert)
 
 
         tableOutput <- reactable(CandInfo,
@@ -395,26 +428,38 @@ server <- function(input, output, session) {
     observe({ update_data(dataBarchart()) })
     
     
-    # Render data download
+    ## Write Download Table
     # CSV
     output$csvDownload <- downloadHandler(
-        filename = function() {
-            paste("data-", Sys.Date(), ".csv", sep="")
+        filename = function(vote) {
+            
+            suchfeld <- gsub(" ", "-", namePerson(), fixed = TRUE) 
+            paste0("Gemeinderatswahlen_", input$select, "_", suchfeld, ".csv")
+            
         },
         content = function(file) {
-            write.csv(filteredData(), file)
+            write.csv(dataDownload(), file, fileEncoding = "UTF-8", row.names = FALSE, na = " ")
         }
     )
     
     # Excel
     output$excelDownload <- downloadHandler(
-        filename = function() {
-            paste("data-", Sys.Date(), ".xlsx", sep="")
+        filename = function(vote) {
+            
+            suchfeld <- gsub(" ", "-",  namePerson(), fixed = TRUE)
+            paste0("Gemeinderatswahlen_", input$select, "_", suchfeld, ".xlsx")
+            
         },
         content = function(file) {
-            write.xlsx(filteredData(), file)
+            sszDownloadExcel(dataDownload(), file, namePerson())
         }
     )
+    
+    output$titleVote <- renderText({
+        req(nameVote())
+        
+        paste("<br><h2>", print(nameVote()), "</h2><hr>")
+    })
 }
 
 # Run the application 
