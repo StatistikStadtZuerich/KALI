@@ -22,7 +22,6 @@ data_2022 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik_gemeinderat
 data_2018 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2018_kandidierende/download/gemeinderatswahlen_2018_kandidierende.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2018) %>% rename(Nachname = X.U.FEFF.Nachname)
 data_2014 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2014-alle-kandidierenden/download/GRW-2014-alle-Kandidierenden-OGD.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2014)
 data_2010 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2010_kandidierende/download/gemeinderatswahlen_2010_kandidierende.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2010)
-# data_2006 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2006-alle-kandidierenden/download/GRW-2006-alle-Kandidierenden-OGD.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2006)
 
 df <- data_2022 %>% 
   bind_rows(data_2018, data_2014, data_2010) %>% 
@@ -34,11 +33,8 @@ df <- data_2022 %>%
   mutate(ListeBezeichnung = trimws(ListeBezeichnung),
          Vorname = trimws(Vorname),
          Nachname = trimws(Nachname),
-         Wahlkreis = trimws(Wahlkreis)) %>% 
-  mutate(ListeBezeichnung = case_when(
-    ListeKurzbez == "EVP/BDP" & Wahljahr == 2018 ~ "EVP/BDP, Evangelische Volkspartei und Bürgerlich-Demokratische Partei",
-    TRUE ~ ListeBezeichnung
-  ))
+         Wahlkreis = trimws(Wahlkreis))
+
 
 rm(data_2022, data_2018, data_2014, data_2010)
 
@@ -49,9 +45,7 @@ data22 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswa
 data18 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2018_resultate/download/GRW_2018_resultate_und_herkunft_der_stimmen.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2018)
 data14 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2014-resultate/download/GRW_2014_Resultate_und_Herkunft_der_Stimmen_Nachzahlung_v2.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2014)
 data10 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2010_resultate/download/GRW_2010_resultate_kandidierende_und_herkunft_der_stimmen.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2010) %>% rename(Liste_Bez_lang = X.U.FEFF.Liste, Wahlresultat = Wahlergebnis)
-# data06 <- read.csv("https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2006-alle-kandidierenden/download/GRW-2006-alle-Kandidierenden-OGD.csv", encoding = "UTF-8") %>% mutate(Wahljahr = 2006)
 
-data10$X.U.FEFF.Liste
 ## Function to make data long to wide
 data_prep <- function(data){
   data %>% 
@@ -81,8 +75,8 @@ rm(data22, data18, data14, data10, df22, df18, df14, df10)
 
 ### Join df_det with df
 data <- df %>%
-  select(-Liste ,-Kand, -Kand, -X.U.FEFF.A) %>% 
   left_join(df_det, by = c("Wahljahr", "Vorname", "Nachname", "Wahlkreis", "ListeBezeichnung")) %>% 
+  select(-Liste ,-Kand, -Kand, -X.U.FEFF.A) %>%
   mutate(
     Name = paste(Vorname, Nachname, sep = " ")
   ) %>% 
@@ -115,7 +109,7 @@ data <- df %>%
     StimmeVeraeListe == "ILoveZH" ~ "I Love ZH",
     TRUE ~ StimmeVeraeListe
   )) %>% 
-  mutate(`Anteil Stimmen aus veränderten Listen` = as.character(round(100*(1-(part_eig_stim/total_stim)),1))) %>% 
+  mutate(`Anteil Stimmen aus veränderten Listen` = as.character(round(100*(1-(part_eig_stim_unv_wl/total_stim)),1))) %>% 
   mutate(
     `Anteil Stimmen aus veränderten Listen` = paste(`Anteil Stimmen aus veränderten Listen`, "%", sep = " ")
   ) %>% 
@@ -131,7 +125,7 @@ data <- df %>%
 #   select(-total_stim, -part_eig_stim, -part_eig_stim_unv_wl, -part_frmd_stim, -Var, -Value) %>% 
 #   distinct()
 
-# matched <- data %>%  group_by(Wahljahr, ListeKurzbez) %>% mutate(nomatch = sum(is.na(total_stim)), count = n()) %>%  select(Wahljahr, ListeKurzbez, count, nomatch) %>% unique()
+# matched <- data %>%  group_by(Wahljahr, Liste) %>% mutate(nomatch = sum(is.na(`Anzahl Stimmen`)), count = n()) %>%  select(Wahljahr, Liste, count, nomatch) %>% unique()
 # ss <- data %>% filter(Wahljahr == 2018 & is.na(total_stim)) 
 
 # 
