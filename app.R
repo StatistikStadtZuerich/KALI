@@ -164,7 +164,7 @@ ui <- fluidPage(
             conditionalPanel(
                 condition = 'input.ActionButtonId==0',
                 
-            ),
+            ), 
             
             # Example Table Output 
             reactableOutput("table"),
@@ -177,13 +177,12 @@ ui <- fluidPage(
             
             # Only show plot if tableCand is also shown
             conditionalPanel(
-              condition = 'output.tableCand',
+              condition = 'output.rowSelected',
             
               # Name of selected candidate
               # Title for table
               hr(),
               h4("Stimmen aus veränderten Listen"),
-              hr(),
               
               chart_container
               
@@ -215,7 +214,7 @@ server <- function(input, output, session) {
     
     # Filter data according to inputs
     filteredData <- reactive({
-        
+      
         # Filter: No Search
         if(input$select == "2022") {
             filtered <- data %>%
@@ -315,7 +314,6 @@ server <- function(input, output, session) {
     
     
     dataPerson <- reactive({
-        req(nrow(filteredData())>0)
         req(rowNumber())
         
         person <- filteredData() %>%
@@ -330,9 +328,20 @@ server <- function(input, output, session) {
 
     })
     
+    # Is a row selected?
+    output$rowSelected <- reactive({
+      req(dataPerson())
+      if(nrow(filteredData())>0){
+        rowSelected <- TRUE
+        rowSelected
+      } else {
+        rowSelected <- FALSE
+        rowSelected
+      }
+    })
+    outputOptions(output, 'rowSelected', suspendWhenHidden = FALSE)
+    
     dataDownload <- reactive({
-        req(nrow(filteredData())>0)
-        req(rowNumber())
         
         person <- filteredData() %>%
             select(Wahljahr, Name, Alter, Geschlecht, Beruf, Wahlkreis, Liste, Wahlresultat, 
@@ -349,7 +358,6 @@ server <- function(input, output, session) {
     })
     
     namePerson <- reactive({
-        req(nrow(dataPerson())>0)
         
         person <- dataPerson()
         
@@ -357,14 +365,12 @@ server <- function(input, output, session) {
     })
     
     nameWahlkreis <- reactive({
-        req(nrow(dataPerson())>0)
         
         person <- dataPerson()
         
         print(person$Wahlkreis)
     })
     nameListe <- reactive({
-        req(nrow(dataPerson())>0)
         
         person <- dataPerson()
         
@@ -372,8 +378,10 @@ server <- function(input, output, session) {
     })
     
     dataBarchart <- reactive({
-        req(dataPerson())
         
+      req(namePerson())
+      req(nameWahlkreis())
+      req(nameListe())
         person <- filteredData() %>%
             filter(Name == namePerson()) %>% 
             filter(Wahlkreis == nameWahlkreis()) %>% 
@@ -387,7 +395,6 @@ server <- function(input, output, session) {
 
   
     output$nameCandidate <- renderText({
-        req(namePerson())
         
         if(!is.null(namePerson())){
         paste("<br><h2>", print(namePerson()), "</h2><hr>")
@@ -395,8 +402,7 @@ server <- function(input, output, session) {
     })
     
     output$tableCand <- renderReactable({
-        req(nrow(dataPerson())>0)
-
+        
         CandInfo <- dataPerson() %>%
             select(-Name, -Wahlkreis, -ListeBezeichnung) %>% 
             gather(`Detailinformationen zu den erhaltenen Stimmen`, Wert)
