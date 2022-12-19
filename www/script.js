@@ -33,37 +33,38 @@ var xAcc = sszvis.prop("xValue");
 
 // Application state
 // -----------------------------------------------
+
 var state = {
   data: [],
   categories: [],
-  selection: [],
+  selected: [],
 };
 
 // State transitions
 // -----------------------------------------------
 var actions = {
-          prepareState: function prepareState(data) {
-            state.data = data;
-            state.categories = sszvis.set(state.data, cAcc);
-            render(state);
-          },
+  prepareState: function prepareState(data) {
+    state.data = data;
+    state.categories = sszvis.set(state.data, cAcc);
+    render(state);
+  },
 
-          showTooltip: function showTooltip(_, category) {
-            state.selected = state.data.filter(function (d) {
-              return cAcc(d) === category;
-            });
-            render(state);
-          },
+  showTooltip: function showTooltip(_, category) {
+    state.selected = state.data.filter(function (d) {
+      return cAcc(d) === category;
+    });
+    render(state);
+  },
 
-          hideTooltip: function hideTooltip() {
-            state.selected = [];
-            render(state);
-          },
+  hideTooltip: function hideTooltip() {
+    state.selected = [];
+    render(state);
+  },
 
-          resize: function resize() {
-            render(state);
-          },
-        };
+  resize: function resize() {
+    render(state);
+  },
+};
 
 // Render
 // -----------------------------------------------
@@ -86,59 +87,62 @@ function render(state) {
 
   // Scales
 
- var widthScale = d3
-  .scaleLinear()
-  .range([0, chartWidth])
-  .domain([0, d3.max(state.data, xAcc)]);
+  var widthScale = d3
+    .scaleLinear()
+    .range([0, chartWidth])
+    .domain([0, d3.max(state.data, xAcc)]);
 
- var yScale = d3
-  .scaleBand()
-  .padding(chartDimensions.padRatio)
-  .paddingOuter(chartDimensions.outerRatio)
-  .rangeRound([0, chartDimensions.totalHeight])
-  .domain(state.categories);
+  var yScale = d3
+    .scaleBand()
+    .padding(chartDimensions.padRatio)
+    .paddingOuter(chartDimensions.outerRatio)
+    .rangeRound([0, chartDimensions.totalHeight])
+    .domain(state.categories);
 
   // Layers
 
- var chartLayer = sszvis
-  .createSvgLayer(CHART_CONTAINER_ID, bounds)
-  .datum(state.data);
+  var chartLayer = sszvis
+    .createSvgLayer(CHART_CONTAINER_ID, bounds)
+    .datum(state.data);
 
- var controlLayer = sszvis.createHtmlLayer(CHART_CONTAINER_ID, bounds);
+  var controlLayer = sszvis.createHtmlLayer(CHART_CONTAINER_ID, bounds);
 
- var tooltipLayer = sszvis
-  .createHtmlLayer(CHART_CONTAINER_ID, bounds)
-  .datum(state.selected);
+  var tooltipLayer = sszvis
+    .createHtmlLayer(CHART_CONTAINER_ID, bounds)
+    .datum(state.selected);
 
   // Components
 
- var barGen = sszvis
-  .bar()
-  .x(0)
-  .y(sszvis.compose(yScale, cAcc))
-  .width(sszvis.compose(widthScale, xAcc))
-  .height(chartDimensions.barHeight)
-  .centerTooltip(true)
-  .fill(sszvis.scaleQual12());
+  var barGen = sszvis
+    .bar()
+    .x(0)
+    .y(sszvis.compose(yScale, cAcc))
+    .width(sszvis.compose(widthScale, xAcc))
+    .height(chartDimensions.barHeight)
+    .centerTooltip(true)
+    .fill(sszvis.scaleQual12());
 
- var xAxis = sszvis
-  .axisX()
-  .scale(widthScale)
-  .orient("bottom")
-  .alignOuterLabels(true)
-  .title(props.yLabel);
+  var xAxis = sszvis
+    .axisX()
+    .scale(widthScale)
+    .orient("bottom")
+    .alignOuterLabels(true)
+    .title(props.yLabel);
 
-if (props.ticks) {
-  xAxis.ticks(props.ticks);
-}
+  if (props.ticks) {
+    xAxis.ticks(props.ticks);
+  }
 
   var yAxis = sszvis.axisY.ordinal().scale(yScale).orient("right");
+  
+  var tooltipHeader = sszvis
+    .modularTextHTML()
+    .bold(function (d) {
+      var xValue = xAcc(d);
+      return isNaN(xValue) ? "keine" : sszvis.formatNumber(xValue);
+    })
+    .plain("Stimmen");
 
-  var tooltipHeader = sszvis.modularTextHTML().bold(
-            sszvis.compose(function (d) {
-              return isNaN(d) ? "keine" : sszvis.formatNumber(d);
-            }, xAcc)
-          );
 
   var tooltip = sszvis
     .tooltip()
@@ -158,7 +162,7 @@ if (props.ticks) {
   );
 
   var bars = chartLayer.selectGroup("bars").call(barGen);
-  
+
   chartLayer
     .selectGroup("xAxis")
     .attr(
@@ -209,18 +213,17 @@ if (props.ticks) {
   sszvis.viewport.on("resize", actions.resize);
 }
 
-// Helper functions
-// -----------------------------------------------
-function isSelected(d) {
-  return sszvis.contains(state.selection, d);
-}
 
-function isWithinBarContour(xValue, category) {
-          var barDatum = sszvis.find(function (d) {
-            return cAcc(d) === category;
-          }, state.data);
-          return sszvis.util.testBarThreshold(xValue, barDatum, xAcc, 1000);
-        }
+  function isWithinBarContour(xValue, category) {
+    var barDatum = sszvis.find(function (d) {
+      return cAcc(d) === category;
+    }, state.data);
+    return sszvis.util.testBarThreshold(xValue, barDatum, xAcc, 1000);
+  }
+
+  function isSelected(d) {
+    return state.selected.indexOf(d) >= 0;
+  }
 
 /*
 Shiny -> JS
@@ -239,3 +242,4 @@ Shiny.addCustomMessageHandler("update_data", function (data) {
     throw e;
   }
 });
+
