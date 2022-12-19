@@ -174,7 +174,21 @@ ui <- fluidPage(
             
             reactableOutput("tableCand"),
             
-            chart_container
+            
+            # Only show plot if tableCand is also shown
+            conditionalPanel(
+              condition = 'output.tableCand',
+            
+              # Name of selected candidate
+              # Title for table
+              hr(),
+              h4("Stimmen aus veränderten Listen"),
+              hr(),
+              
+              chart_container
+              
+            )
+
         )
     )
 )
@@ -370,20 +384,7 @@ server <- function(input, output, session) {
         person
         
     })
-    
-    # not show further information if nothing is selected
-    # does weird stuff
-    # observe({
-    #     if (nrow(dataPerson())>0) {
-    #         show("nameCandidate")
-    #         show("tableCand")
-    #         # show("chart_container")
-    #     } else {
-    #         hide("nameCandidate")
-    #         hide("tableCand")
-    #         # hide("chart_container")
-    #     }
-    # })
+
   
     output$nameCandidate <- renderText({
         req(namePerson())
@@ -415,7 +416,6 @@ server <- function(input, output, session) {
         )
         tableOutput
     })
-
     
     observe({ update_data(dataBarchart()) })
     
@@ -456,3 +456,4 @@ server <- function(input, output, session) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
+
