@@ -67,39 +67,10 @@ ui <- fluidPage(
                         selected = "Ganz Stadt"),
             
             
-            conditionalPanel(
-                condition = 'input.select == "2022"',
-                
-                # Example selectInput()
-                sszSelectInput("select31", "Liste:", 
-                            choices = c("Alle Listen", unique(data[data$Wahljahr == 2022,]$ListeBezeichnung)),
-                            selected = "Alle Listen"),
-            ),
-            conditionalPanel(
-                condition = 'input.select == "2018"',
-                
-                # Example selectInput()
-                sszSelectInput("select32", "Liste:", 
-                            choices = c("Alle Listen", unique(data[data$Wahljahr == 2018,]$ListeBezeichnung)),
-                            selected = "Alle Listen"),
-            ),
-            conditionalPanel(
-                condition = 'input.select == "2014"',
-
-                # Example selectInput()
-                sszSelectInput("select33", "Liste:", 
-                            choices = c("Alle Listen", unique(data[data$Wahljahr == 2014,]$ListeBezeichnung)),
-                            selected = "Alle Listen"),
-            ),
-            conditionalPanel(
-                condition = 'input.select == "2010"',
-
-                # Example selectInput()
-                sszSelectInput("select34", "Liste:", 
-                            choices = c("Alle Listen", unique(data[data$Wahljahr == 2010,]$ListeBezeichnung)),
-                            selected = "Alle Listen"),
-                
-            ),
+            # Example selectInput()
+            sszSelectInput("select31", "Liste:", 
+                          choices = c("Alle Listen"),
+                          selected = "Alle Listen"),
             
             # Example radioButtons() vertical
             sszRadioButtons("ButtonGroupLabel2",
@@ -193,6 +164,7 @@ ui <- fluidPage(
 )
 
 
+
 # Server function
 server <- function(input, output, session) {
     
@@ -212,52 +184,27 @@ server <- function(input, output, session) {
         )
     }
     
+    # update selection of lists based on selected year
+    observeEvent(input$select, {
+      print("update")
+      new_choices <-  c('Alle Listen',
+                        unique(data[data$Wahljahr == input$select,]$ListeBezeichnung))
+      updateSelectInput(session = session,
+                        inputId = 'select31',
+                        choices = new_choices,
+                        selected = 'Alle Listen')
+    })
+    
     # Filter data according to inputs
     filteredData <- reactive({
-      
-        # Filter: No Search
-        if(input$select == "2022") {
-            filtered <- data %>%
-                filter(Wahljahr == input$select) %>%
-                filter(if(input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case=TRUE) else TRUE) %>%
-                filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
-                filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE)  %>%
-                filter(if(input$select31 != "Alle Listen") ListeBezeichnung == input$select31 else TRUE) %>%
-                filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
-            filtered
-            
-                # Filter: With Search
-            } else if(input$select == "2018") {
-                filtered <- data %>%
-                    filter(Wahljahr == input$select) %>%
-                    filter(if(input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case=TRUE) else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
-                    filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE)  %>%
-                    filter(if(input$select32 != "Alle Listen") ListeBezeichnung == input$select32 else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
-                filtered
-            
-            } else if(input$select == "2014") {
-                filtered <- data %>%
-                    filter(Wahljahr == input$select) %>%
-                    filter(if(input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case=TRUE) else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
-                    filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE)  %>%
-                    filter(if(input$select33 != "Alle Listen") ListeBezeichnung == input$select33 else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
-                filtered
-            
-            } else if(input$select == "2010") {
-                filtered <- data %>%
-                    filter(Wahljahr == input$select) %>%
-                    filter(if(input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case=TRUE) else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
-                    filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE)  %>%
-                    filter(if(input$select34 != "Alle Listen") ListeBezeichnung == input$select34 else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
-                filtered
-            
-            }
+      data %>%
+        filter(Wahljahr == input$select) %>%
+        filter(if(input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case=TRUE) else TRUE) %>%
+        filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
+        filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE)  %>%
+        filter(if(input$select31 != "Alle Listen") ListeBezeichnung == input$select31 else TRUE) %>%
+        filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
+       
     }) 
     # %>%
     #     # necessary to get reactive data in D3 chart
