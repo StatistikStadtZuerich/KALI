@@ -87,10 +87,6 @@ ui <- fluidPage(
                 sszActionButton("ActionButtonId",
                                 "Abfrage starten")
             ),
-            conditionalPanel(
-                condition = 'input.ActionButtonId>0',
-                
-            ),
             
             # Downloads
             conditionalPanel(
@@ -130,25 +126,22 @@ ui <- fluidPage(
                 tags$div(
                     class = "infoDiv",
                     p("Für Detailinformationen zur Stimmbeteiligung und zum Ergebnis einer Abstimmung wählen Sie eine Zeile aus.")
-                )
-            ),
-            conditionalPanel(
-                condition = 'input.ActionButtonId==0',
+                ),
                 
-            ), 
-            
-            # Example Table Output 
-            reactableOutput("table"),
-            
-            # Name of selected candidate
-            htmlOutput("nameCandidate"),
-            
-            reactableOutput("tableCand"),
+                # Example Table Output 
+                reactableOutput("table"),
+            ),
             
             
             # Only show plot if tableCand is also shown
             conditionalPanel(
               condition = 'output.rowSelected',
+              
+              # Name of selected candidate
+              htmlOutput("nameCandidate"),
+              
+              reactableOutput("tableCand"),
+              
             
               # Name of selected candidate
               # Title for table
