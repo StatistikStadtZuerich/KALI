@@ -50,30 +50,30 @@ ui <- fluidPage(
             
         
             # Example radioButtons() vertical
-            sszRadioButtons("ButtonGroupLabel",
+            sszRadioButtons("gender_radio_button",
                             label = "Geschlecht:",
                             choices = c("Alle", "Männlich", "Weiblich"),
                             selected = "Alle" # default value
                             ),
             
             # Example selectInput()
-            sszSelectInput("select", "Gemeinderatswahlen:", 
+            sszSelectInput("select_year", "Gemeinderatswahlen:", 
                         choices = unique(data$Wahljahr)),
             
             # Example selectInput()
-            sszSelectInput("select2", "Wahlkreis:", 
+            sszSelectInput("select_kreis", "Wahlkreis:", 
                         choices = c("Ganz Stadt", "Kreis 1 + 2", "Kreis 3", "Kreis 4 + 5", "Kreis 6",
                                     "Kreis 7 + 8", "Kreis 9", "Kreis 10", "Kreis 11", "Kreis 12"),
                         selected = "Ganz Stadt"),
             
             
             # Example selectInput()
-            sszSelectInput("select31", "Liste:", 
+            sszSelectInput("select_liste", "Liste:", 
                           choices = c("Alle Listen"),
                           selected = "Alle Listen"),
             
             # Example radioButtons() vertical
-            sszRadioButtons("ButtonGroupLabel2",
+            sszRadioButtons("wahlstatus_radio_button",
                             label = "Status:",
                             choices = c("Alle", "gewählt", "nicht gewählt"),
                             selected = "Alle" 
@@ -178,12 +178,12 @@ server <- function(input, output, session) {
     }
     
     # update selection of lists based on selected year
-    observeEvent(input$select, {
+    observeEvent(input$select_year, {
       print("update")
       new_choices <-  c('Alle Listen',
-                        unique(data[data$Wahljahr == input$select,]$ListeBezeichnung))
+                        unique(data[data$Wahljahr == input$select_year,]$ListeBezeichnung))
       updateSelectInput(session = session,
-                        inputId = 'select31',
+                        inputId = 'select_liste',
                         choices = new_choices,
                         selected = 'Alle Listen')
     })
@@ -191,22 +191,20 @@ server <- function(input, output, session) {
     # Filter data according to inputs
     filteredData <- reactive({
       data %>%
-        filter(Wahljahr == input$select) %>%
+        filter(Wahljahr == input$select_year) %>%
         filter(if(input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case=TRUE) else TRUE) %>%
-        filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
-        filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE)  %>%
-        filter(if(input$select31 != "Alle Listen") ListeBezeichnung == input$select31 else TRUE) %>%
-        filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
+        filter(if(input$gender_radio_button != "Alle") Geschlecht == input$gender_radio_button else TRUE) %>%
+        filter(if(input$select_kreis != "Ganz Stadt") Wahlkreis == input$select_kreis else TRUE)  %>%
+        filter(if(input$select_liste != "Alle Listen") ListeBezeichnung == input$select_liste else TRUE) %>%
+        filter(if(input$wahlstatus_radio_button != "Alle") Wahlresultat == input$wahlstatus_radio_button else TRUE)
        
     }) 
     # %>%
     #     # necessary to get reactive data in D3 chart
-    #     bindCache(input$ActionButtonId, input$select, input$suchfeld, input$ButtonGroupLabel,
-    #               input$select2, input$select31, input$select32, input$select33,
-    #               input$select34, input$ButtonGroupLabel2) %>%
-    #     bindEvent(input$ActionButtonId, input$select, input$suchfeld, input$ButtonGroupLabel,
-    #               input$select2, input$select31, input$select32, input$select33,
-    #               input$select34, input$ButtonGroupLabel2)
+    #     bindCache(input$ActionButtonId, input$select_year, input$suchfeld, input$gender_radio_button,
+    #               input$select_kreis, input$select_liste, input$wahlstatus_radio_button) %>%
+    #     bindEvent(input$ActionButtonId, input$select_year, input$suchfeld, input$gender_radio_button,
+    #               input$select_kreis, input$select_liste, input$wahlstatus_radio_button)
     
     
     # Reactable Output
@@ -372,7 +370,7 @@ server <- function(input, output, session) {
         filename = function(vote) {
             
             suchfeld <- gsub(" ", "-", namePerson(), fixed = TRUE) 
-            paste0("Gemeinderatswahlen_", input$select, "_", suchfeld, ".csv")
+            paste0("Gemeinderatswahlen_", input$select_year, "_", suchfeld, ".csv")
             
         },
         content = function(file) {
@@ -385,7 +383,7 @@ server <- function(input, output, session) {
         filename = function(vote) {
             
             suchfeld <- gsub(" ", "-",  namePerson(), fixed = TRUE)
-            paste0("Gemeinderatswahlen_", input$select, "_", suchfeld, ".xlsx")
+            paste0("Gemeinderatswahlen_", input$select_year, "_", suchfeld, ".xlsx")
             
         },
         content = function(file) {
