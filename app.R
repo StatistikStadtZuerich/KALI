@@ -21,6 +21,9 @@ source("exportExcel.R", encoding = "UTF-8")
 # Source Dependencies
 source("dependencies.R", encoding = "UTF-8")
 
+# source functions to prepare reactables
+source("get_reactables_candidates.R")
+
 dependencies <- getDependencies()
 chart_container <- tags$div(id="sszvis-chart")
 
@@ -80,7 +83,6 @@ ui <- fluidPage(
                             selected = "Alle" 
                             ),
             
-            
             # Action Button
             conditionalPanel(
                 condition = 'input.ActionButtonId==0',
@@ -107,7 +109,7 @@ ui <- fluidPage(
                     ),
                     sszOgdDownload(inputId = "ogdDown",
                                    label = "OGD",
-                                   onclick ="window.open('https://data.stadt-zuerich.ch/dataset?q=Kandidierende&sort=score+desc%2C+date_last_modified+desc', '_blank')"
+                                   onclick = "window.open('https://data.stadt-zuerich.ch/dataset?q=Kandidierende&sort=score+desc%2C+date_last_modified+desc', '_blank')"
                     )
                 )
             )
@@ -216,40 +218,7 @@ server <- function(input, output, session) {
         
         req(global$activeButton == TRUE)
         
-        tableOutput <- reactable(filteredData() %>%
-                                     select(Name, Alter, Geschlecht, Beruf, Wahlkreis, Liste) %>% 
-                                     unique()
-                                  ,
-                                  paginationType = "simple",
-                                  language = reactableLang(
-                                      noData = "Keine Einträge gefunden",
-                                      pageNumbers = "{page} von {pages}",
-                                      pageInfo = "{rowStart} bis {rowEnd} von {rows} Einträgen",
-                                      pagePrevious = "\u276e",
-                                      pageNext = "\u276f",
-                                      pagePreviousLabel = "Vorherige Seite",
-                                      pageNextLabel = "Nächste Seite"
-                                      
-                                  ),
-                                  theme = reactableTheme(
-                                      borderColor = "#DEDEDE"
-                                  ),
-                                 defaultColDef = colDef(
-                                     align = "left",
-                                     minWidth = 50
-                                 ),
-                                  outlined = TRUE,
-                                  highlight = TRUE,
-                                  defaultPageSize = 5,
-                                  onClick = JS("function(rowInfo, column) {
-    
-    // Send the click event to Shiny, which will be available in input$show_details
-    // Note that the row index starts at 0 in JavaScript, so we add 1
-    if (window.Shiny) {
-      Shiny.setInputValue('show_details', rowInfo.index + 1, { priority: 'event' })
-    }
-  }")
-        )
+        tableOutput <- get_reactable_candidates(filteredData())
         tableOutput
     })
     
@@ -366,18 +335,7 @@ server <- function(input, output, session) {
             gather(`Detailinformationen zu den erhaltenen Stimmen`, Wert)
 
 
-        tableOutput <- reactable(CandInfo,
-                                 paginationType = "simple",
-                                 theme = reactableTheme(
-                                     borderColor = "#DEDEDE"
-                                 ),
-                                 defaultColDef = colDef(
-                                     align = "left",
-                                     minWidth = 50
-                                 ),
-                                 outlined = TRUE,
-                                 highlight = TRUE
-        )
+        tableOutput <- get_reactable_details(CandInfo)
         tableOutput
     })
     
