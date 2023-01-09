@@ -242,7 +242,7 @@ server <- function(input, output, session) {
     
     
     dataPerson <- reactive({
-        req(rowNumber())
+      req(rowNumber() > 0)
         
         person <- filteredData() %>%
             select(Name, Wahlkreis, ListeBezeichnung, Wahlresultat, 
@@ -257,7 +257,7 @@ server <- function(input, output, session) {
     })
     
     dataDownload <- reactive({
-        
+      req(rowNumber() > 0)
         person <- filteredData() %>%
             select(Wahljahr, Name, Alter, Geschlecht, Beruf, Wahlkreis, Liste, Wahlresultat, 
                    `Anzahl Stimmen`, `Parteieigene Stimmen`, `Parteifremde Stimmen`,
@@ -273,8 +273,6 @@ server <- function(input, output, session) {
     })
     
     dataBarchart <- reactive({
-        
-      req(dataPerson())
       req(rowNumber() > 0)
         person <- filteredData() %>%
             filter(Name == dataPerson()$Name) %>% 
@@ -290,10 +288,7 @@ server <- function(input, output, session) {
   
     output$nameCandidate <- renderText({
       req(rowNumber() > 0)
-        
-        if(!is.null(dataPerson()$Name)){
-        paste("<br><h2>", print(dataPerson()$Name), "</h2><hr>")
-        }else{}
+      paste("<br><h2>", print(dataPerson()$Name), "</h2><hr>")
     })
     
     output$tableCand <- renderReactable({
@@ -309,9 +304,9 @@ server <- function(input, output, session) {
     })
     
     observe({ 
-      if (global$activeButton) {
-        update_data(dataBarchart()) 
-        }})
+      req(global$activeButton == TRUE)
+      update_data(dataBarchart()) 
+      })
     
     
     ## Write Download Table
