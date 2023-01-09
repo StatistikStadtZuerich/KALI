@@ -151,9 +151,12 @@ ui <- fluidPage(
               hr(),
               h4("Stimmen aus veränderten Listen"),
               
-              chart_container
-              
-            )
+            ),
+
+            # Chart container; can't be used in a conditional panel as when the
+            # update_data function is called, the UI is not ready yet when JS tries
+            # to target container id.
+            chart_container
 
         )
     )
@@ -298,17 +301,22 @@ server <- function(input, output, session) {
     observeEvent(input$show_details,
                  { 
                    req(global$activeButton == TRUE)
-                   req(selected_row_number() > 0)
                    
-                   person <- filtered_data() %>%
-                     filter(Name == data_person()$Name) %>% 
-                     filter(Wahlkreis == data_person()$Wahlkreis) %>% 
-                     filter(ListeBezeichnung == data_person()$ListeBezeichnung) %>% 
-                     select(Name, StimmeVeraeListe, Value) %>% 
-                     filter(!is.na(Value) & Value > 0) %>%
-                     arrange(desc(Value))
-                   
-                   update_data(person) 
+                   if (selected_row_number() > 0) {
+                     person <- filtered_data() %>%
+                       filter(Name == data_person()$Name) %>% 
+                       filter(Wahlkreis == data_person()$Wahlkreis) %>% 
+                       filter(ListeBezeichnung == data_person()$ListeBezeichnung) %>% 
+                       select(Name, StimmeVeraeListe, Value) %>% 
+                       filter(!is.na(Value) & Value > 0) %>%
+                       arrange(desc(Value))
+                     
+                     update_data(person)   
+                   } else {
+                    # sendCustomMessage requires a message argument to be defined,
+                    # even though it's not needed in this case.
+                     session$sendCustomMessage(type = "clear_chart", message="")
+                   }
                   })
     
     
