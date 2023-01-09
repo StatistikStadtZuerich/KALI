@@ -6,11 +6,9 @@ library(lubridate)
 library(openxlsx)
 library(readxl)
 library(reactable)
-library(icons)
 library(shiny)
 library(htmltools)
 library(zuericssstyle)
-#get_shiny_css()
 
 # Source Prepared Data
 source("prepareData.R", encoding = "UTF-8")
@@ -21,12 +19,11 @@ source("exportExcel.R", encoding = "UTF-8")
 # Source Dependencies
 source("dependencies.R", encoding = "UTF-8")
 
+# source functions to prepare reactables
+source("get_reactables_candidates.R")
+
 dependencies <- getDependencies()
-chart_container <- tags$div(id="sszvis-chart")
-
-# Set the Icon path
-icon <- icon_set("icons/")
-
+chart_container <- tags$div(id = "sszvis-chart")
 
 # Define UI
 ui <- fluidPage(
@@ -34,8 +31,7 @@ ui <- fluidPage(
     # Include CSS
     includeCSS("sszThemeShiny.css"),
     
-    # To conveniently disable select element from the server side.
-    useShinyjs(),
+    # include appropriate dependencies
     dependencies,
     
     # Application Title 
@@ -45,85 +41,54 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             
-            # Example textInput()
+            # Suchfeld: Namensuche
             sszTextInput("suchfeld", "Name:"),
             
         
-            # Example radioButtons() vertical
-            sszRadioButtons("ButtonGroupLabel",
+            # radioButtons() vertical for gender
+            sszRadioButtons("gender_radio_button",
                             label = "Geschlecht:",
                             choices = c("Alle", "Männlich", "Weiblich"),
                             selected = "Alle" # default value
                             ),
             
-            # Example selectInput()
-            sszSelectInput("select", "Gemeinderatswahlen:", 
+            # selectInput() for year of election
+            sszSelectInput("select_year", "Gemeinderatswahlen:", 
                         choices = unique(data$Wahljahr)),
             
-            # Example selectInput()
-            sszSelectInput("select2", "Wahlkreis:", 
-                        choices = c("Ganz Stadt", "Kreis 1 + 2", "Kreis 3", "Kreis 4 + 5", "Kreis 6",
-                                    "Kreis 7 + 8", "Kreis 9", "Kreis 10", "Kreis 11", "Kreis 12"),
+            # selectInput() for Stadtkreis
+            sszSelectInput("select_kreis", "Wahlkreis:", 
+                        choices = c("Ganz Stadt", "Kreis 1 + 2", "Kreis 3", 
+                                    "Kreis 4 + 5", "Kreis 6", "Kreis 7 + 8", 
+                                    "Kreis 9", "Kreis 10", "Kreis 11", 
+                                    "Kreis 12"),
                         selected = "Ganz Stadt"),
             
             
-            conditionalPanel(
-                condition = 'input.select == "2022"',
-                
-                # Example selectInput()
-                sszSelectInput("select31", "Liste:", 
-                            choices = c("Alle Listen", unique(data[data$Wahljahr == 2022,]$ListeBezeichnung)),
-                            selected = "Alle Listen"),
-            ),
-            conditionalPanel(
-                condition = 'input.select == "2018"',
-                
-                # Example selectInput()
-                sszSelectInput("select32", "Liste:", 
-                            choices = c("Alle Listen", unique(data[data$Wahljahr == 2018,]$ListeBezeichnung)),
-                            selected = "Alle Listen"),
-            ),
-            conditionalPanel(
-                condition = 'input.select == "2014"',
-
-                # Example selectInput()
-                sszSelectInput("select33", "Liste:", 
-                            choices = c("Alle Listen", unique(data[data$Wahljahr == 2014,]$ListeBezeichnung)),
-                            selected = "Alle Listen"),
-            ),
-            conditionalPanel(
-                condition = 'input.select == "2010"',
-
-                # Example selectInput()
-                sszSelectInput("select34", "Liste:", 
-                            choices = c("Alle Listen", unique(data[data$Wahljahr == 2010,]$ListeBezeichnung)),
-                            selected = "Alle Listen"),
-                
-            ),
+            # selectInput() for party
+            sszSelectInput("select_liste", "Liste:", 
+                          choices = c("Alle Listen"),
+                          selected = "Alle Listen"
+                          ),
             
-            # Example radioButtons() vertical
-            sszRadioButtons("ButtonGroupLabel2",
+            # radioButtons() vertical for whether the person was elected
+            sszRadioButtons("wahlstatus_radio_button",
                             label = "Status:",
                             choices = c("Alle", "gewählt", "nicht gewählt"),
                             selected = "Alle" 
                             ),
             
-            
-            # Action Button
+            # Action Button to start the query and show the resulting table
             conditionalPanel(
-                condition = 'input.ActionButtonId==0',
-                
+                condition = "input.ActionButtonId==0",
                 sszActionButton("ActionButtonId",
                                 "Abfrage starten")
             ),
-            conditionalPanel(
-                condition = 'input.ActionButtonId>0',
-                
-            ),
             
-            # Downloads
+            # Downloads - only show these when one person is selected to 
+            # download details about this person
             conditionalPanel(
-                condition = 'output.tableCand',
+                condition = "output.tableCand",
                 h3("Daten herunterladen"),
                 
                 # Download Panel
@@ -139,7 +104,7 @@ ui <- fluidPage(
                     ),
                     sszOgdDownload(inputId = "ogdDown",
                                    label = "OGD",
-                                   onclick ="window.open('https://data.stadt-zuerich.ch/dataset?q=Kandidierende&sort=score+desc%2C+date_last_modified+desc', '_blank')"
+                                   onclick = "window.open('https://data.stadt-zuerich.ch/dataset?q=Kandidierende&sort=score+desc%2C+date_last_modified+desc', '_blank')"
                     )
                 )
             )
@@ -150,7 +115,7 @@ ui <- fluidPage(
         mainPanel(
             
             conditionalPanel(
-                condition = 'input.ActionButtonId>0',
+                condition = "input.ActionButtonId>0",
                 
                 # Title for table
                 h1("Die untenstehenden Vorlagen entsprechen Ihren Suchkriterien"),
@@ -159,25 +124,27 @@ ui <- fluidPage(
                 tags$div(
                     class = "infoDiv",
                     p("Für Detailinformationen zur Stimmbeteiligung und zum Ergebnis einer Abstimmung wählen Sie eine Zeile aus.")
-                )
-            ),
-            conditionalPanel(
-                condition = 'input.ActionButtonId==0',
+                ),
                 
-            ), 
+                # Example Table Output 
+                reactableOutput("table"),
+            ),
             
-            # Example Table Output 
-            reactableOutput("table"),
+            # initialise hidden variable for row selection, to be used with JS function in reactable
+            conditionalPanel("false",
+                             numericInput(label = NULL, 
+                                          inputId = "show_details", 
+                                          value = 0)),
             
-            # Name of selected candidate
+            # Name of selected candidate - requires show_details > 0
             htmlOutput("nameCandidate"),
             
+            # table with info about selected candidate - requires show_details > 0
             reactableOutput("tableCand"),
-            
             
             # Only show plot if tableCand is also shown
             conditionalPanel(
-              condition = 'output.rowSelected',
+              condition = "output.tableCand",
             
               # Name of selected candidate
               # Title for table
@@ -193,6 +160,7 @@ ui <- fluidPage(
 )
 
 
+
 # Server function
 server <- function(input, output, session) {
     
@@ -204,226 +172,144 @@ server <- function(input, output, session) {
         global$activeButton <- TRUE
     })
     
-    # send updated data to json for D3 chart
+    # function to send updated data to json for D3 chart
     update_data <- function(data) {
+      print(glue::glue("sending message {jsonlite::toJSON(data)}"))
         session$sendCustomMessage(
-            type="update_data",
-            message=jsonlite::toJSON(data)
+            type = "update_data",
+            message = jsonlite::toJSON(data)
         )
     }
     
+    # update selection of lists based on selected year
+    observeEvent(input$select_year, {
+      new_choices <-  c(
+        "Alle Listen",
+        unique(data[data$Wahljahr == input$select_year, ]$ListeBezeichnung)
+        )
+      print(glue::glue("update selection with {new_choices}"))
+      updateSelectInput(session = session,
+                        inputId = "select_liste",
+                        choices = new_choices,
+                        selected = new_choices[[1]])
+    })
+    
     # Filter data according to inputs
-    filteredData <- reactive({
-      
-        # Filter: No Search
-        if(input$select == "2022") {
-            filtered <- data %>%
-                filter(Wahljahr == input$select) %>%
-                filter(if(input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case=TRUE) else TRUE) %>%
-                filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
-                filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE)  %>%
-                filter(if(input$select31 != "Alle Listen") ListeBezeichnung == input$select31 else TRUE) %>%
-                filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
-            filtered
-            
-                # Filter: With Search
-            } else if(input$select == "2018") {
-                filtered <- data %>%
-                    filter(Wahljahr == input$select) %>%
-                    filter(if(input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case=TRUE) else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
-                    filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE)  %>%
-                    filter(if(input$select32 != "Alle Listen") ListeBezeichnung == input$select32 else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
-                filtered
-            
-            } else if(input$select == "2014") {
-                filtered <- data %>%
-                    filter(Wahljahr == input$select) %>%
-                    filter(if(input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case=TRUE) else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
-                    filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE)  %>%
-                    filter(if(input$select33 != "Alle Listen") ListeBezeichnung == input$select33 else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
-                filtered
-            
-            } else if(input$select == "2010") {
-                filtered <- data %>%
-                    filter(Wahljahr == input$select) %>%
-                    filter(if(input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case=TRUE) else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel != "Alle") Geschlecht == input$ButtonGroupLabel else TRUE) %>%
-                    filter(if(input$select2 != "Ganz Stadt") Wahlkreis == input$select2 else TRUE)  %>%
-                    filter(if(input$select34 != "Alle Listen") ListeBezeichnung == input$select34 else TRUE) %>%
-                    filter(if(input$ButtonGroupLabel2 != "Alle") Wahlresultat == input$ButtonGroupLabel2 else TRUE)
-                filtered
-            
-            }
+    filtered_data <- reactive({
+      data %>%
+        filter(Wahljahr == input$select_year) %>%
+        filter(if (input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case = TRUE) else TRUE) %>%
+        filter(if (input$gender_radio_button != "Alle") Geschlecht == input$gender_radio_button else TRUE) %>%
+        filter(if (input$select_kreis != "Ganz Stadt") Wahlkreis == input$select_kreis else TRUE)  %>%
+        filter(if (input$select_liste != "Alle Listen") ListeBezeichnung == input$select_liste else TRUE) %>%
+        filter(if (input$wahlstatus_radio_button != "Alle") Wahlresultat == input$wahlstatus_radio_button else TRUE)
+       
     }) 
     # %>%
-    #     # necessary to get reactive data in D3 chart
-    #     bindCache(input$ActionButtonId, input$select, input$suchfeld, input$ButtonGroupLabel,
-    #               input$select2, input$select31, input$select32, input$select33,
-    #               input$select34, input$ButtonGroupLabel2) %>%
-    #     bindEvent(input$ActionButtonId, input$select, input$suchfeld, input$ButtonGroupLabel,
-    #               input$select2, input$select31, input$select32, input$select33,
-    #               input$select34, input$ButtonGroupLabel2)
+    #     bindCache(input$ActionButtonId, input$select_year, input$suchfeld, input$gender_radio_button,
+    #               input$select_kreis, input$select_liste, input$wahlstatus_radio_button) %>%
+    #     bindEvent(input$ActionButtonId, input$select_year, input$suchfeld, input$gender_radio_button,
+    #               input$select_kreis, input$select_liste, input$wahlstatus_radio_button)
     
     
-    # Reactable Output
+    # main Reactable Output
     output$table <- renderReactable({
         
         req(global$activeButton == TRUE)
         
-        tableOutput <- reactable(filteredData() %>%
-                                     select(Name, Alter, Geschlecht, Beruf, Wahlkreis, Liste) %>% 
-                                     unique()
-                                  ,
-                                  paginationType = "simple",
-                                  language = reactableLang(
-                                      noData = "Keine Einträge gefunden",
-                                      pageNumbers = "{page} von {pages}",
-                                      pageInfo = "{rowStart} bis {rowEnd} von {rows} Einträgen",
-                                      pagePrevious = "\u276e",
-                                      pageNext = "\u276f",
-                                      pagePreviousLabel = "Vorherige Seite",
-                                      pageNextLabel = "Nächste Seite"
-                                      
-                                  ),
-                                  theme = reactableTheme(
-                                      borderColor = "#DEDEDE"
-                                  ),
-                                 defaultColDef = colDef(
-                                     align = "left",
-                                     minWidth = 50
-                                 ),
-                                  outlined = TRUE,
-                                  highlight = TRUE,
-                                  defaultPageSize = 5,
-                                  onClick = "select",
-                                  selection = "single",
-                                  rowClass = JS("function(rowInfo) {return rowInfo.selected ? 'selected' : ''}"),
-                                  rowStyle = JS("function(rowInfo) {if (rowInfo.selected) { return { backgroundColor: '#F2F2F2'}}}")
-        )
-        tableOutput
+        table_output <- get_reactable_candidates(filtered_data())
+        table_output
     })
     
     # Prepare data for second Output
-    rowNumber <- reactive({
-        getReactableState("table", "selected")
+    
+    # update the show_details to zero when any of the inputs are changed
+    observeEvent(eventExpr = list(input$suchfeld, input$select_year,
+                                  input$gender_radio_button,
+                                  input$select_kreis, input$select_liste,
+                                  input$wahlstatus_radio_button),
+                 handlerExpr = {
+                   print("setting to zero")
+                   updateNumericInput(session, "show_details", value = 0)},
+                 ignoreNULL = FALSE)
+    
+    # turn the show_details into a reactive so it can be used further
+    selected_row_number <- reactive({
+      print(glue::glue("row number selected: {input$show_details}"))
+      input$show_details
     })
     
     
-    dataPerson <- reactive({
-        req(rowNumber())
+    data_person <- reactive({
+      req(selected_row_number() > 0)
         
-        person <- filteredData() %>%
+        person <- filtered_data() %>%
             select(Name, Wahlkreis, ListeBezeichnung, Wahlresultat, 
-                   `Anzahl Stimmen`, `Parteieigene Stimmen`, `Parteifremde Stimmen`,
+                   `Anzahl Stimmen`, `Parteieigene Stimmen`, 
+                   `Parteifremde Stimmen`,
                    `Anteil Stimmen aus veränderten Listen`) %>%
             unique() %>%
             mutate(ID = row_number()) %>%
-            filter(ID == rowNumber()) %>% 
+            filter(ID == selected_row_number()) %>% 
             select(-ID)
         person
 
     })
     
-    # Is a row selected?
-    output$rowSelected <- reactive({
-      req(dataPerson())
-      if(nrow(filteredData())>0){
-        rowSelected <- TRUE
-        rowSelected
-      } else {
-        rowSelected <- FALSE
-        rowSelected
-      }
-    })
-    outputOptions(output, 'rowSelected', suspendWhenHidden = FALSE)
-    
-    dataDownload <- reactive({
-        
-        person <- filteredData() %>%
-            select(Wahljahr, Name, Alter, Geschlecht, Beruf, Wahlkreis, Liste, Wahlresultat, 
-                   `Anzahl Stimmen`, `Parteieigene Stimmen`, `Parteifremde Stimmen`,
+    data_download <- reactive({
+      req(selected_row_number() > 0)
+        person <- filtered_data() %>%
+            select(Wahljahr, Name, Alter, Geschlecht, Beruf, Wahlkreis, Liste, 
+                   Wahlresultat, `Anzahl Stimmen`, `Parteieigene Stimmen`, 
+                   `Parteifremde Stimmen`,
                    `Anteil Stimmen aus veränderten Listen`) %>%
             unique() %>%
             mutate(ID = row_number()) %>%
-            filter(ID == rowNumber()) %>% 
+            filter(ID == selected_row_number()) %>% 
             select(-ID) %>% 
-            gather(`Result der Wahl`, Wert, -Wahljahr, -Name, -Alter, -Geschlecht, 
-                   -Beruf, -Wahlkreis, -Liste)
-        person
-        
-    })
-    
-    namePerson <- reactive({
-        
-        person <- dataPerson()
-        
-        print(person$Name)
-    })
-    
-    nameWahlkreis <- reactive({
-        
-        person <- dataPerson()
-        
-        print(person$Wahlkreis)
-    })
-    nameListe <- reactive({
-        
-        person <- dataPerson()
-        
-        print(person$ListeBezeichnung)
-    })
-    
-    dataBarchart <- reactive({
-        
-      req(namePerson())
-      req(nameWahlkreis())
-      req(nameListe())
-        person <- filteredData() %>%
-            filter(Name == namePerson()) %>% 
-            filter(Wahlkreis == nameWahlkreis()) %>% 
-            filter(ListeBezeichnung == nameListe()) %>% 
-            select(Name, StimmeVeraeListe, Value) %>% 
-            filter(!is.na(Value) & Value > 0) %>% 
-            arrange(desc(Value))
+            gather(`Result der Wahl`, Wert, -Wahljahr, -Name, -Alter, 
+                   -Geschlecht, -Beruf, -Wahlkreis, -Liste)
         person
         
     })
 
-  
+    # Render title of selected person
     output$nameCandidate <- renderText({
-        
-        if(!is.null(namePerson())){
-        paste("<br><h2>", print(namePerson()), "</h2><hr>")
-        }else{}
+      req(selected_row_number() > 0)
+      paste("<br><h2>", print(data_person()$Name), "</h2><hr>")
     })
     
+    # table for selected person
     output$tableCand <- renderReactable({
+      req(selected_row_number() > 0)
         
-        CandInfo <- dataPerson() %>%
+        candidate_info <- data_person() %>%
             select(-Name, -Wahlkreis, -ListeBezeichnung) %>% 
             gather(`Detailinformationen zu den erhaltenen Stimmen`, Wert)
 
 
-        tableOutput <- reactable(CandInfo,
-                                 paginationType = "simple",
-                                 theme = reactableTheme(
-                                     borderColor = "#DEDEDE"
-                                 ),
-                                 defaultColDef = colDef(
-                                     align = "left",
-                                     minWidth = 50
-                                 ),
-                                 outlined = TRUE,
-                                 highlight = TRUE
-        )
-        tableOutput
+        table_output <- get_reactable_details(candidate_info)
+        table_output
     })
     
-    observe({ update_data(dataBarchart()) })
+    # create and send data for bar chart
+    # observeEvent rather than observe to avoid race condition between sending
+    # the data and setting the input$show_details/the selected row number
+    observeEvent(input$show_details,
+                 { 
+                   req(global$activeButton == TRUE)
+                   req(selected_row_number() > 0)
+                   
+                   person <- filtered_data() %>%
+                     filter(Name == data_person()$Name) %>% 
+                     filter(Wahlkreis == data_person()$Wahlkreis) %>% 
+                     filter(ListeBezeichnung == data_person()$ListeBezeichnung) %>% 
+                     select(Name, StimmeVeraeListe, Value) %>% 
+                     filter(!is.na(Value) & Value > 0) %>%
+                     arrange(desc(Value))
+                   
+                   update_data(person) 
+                  })
     
     
     ## Write Download Table
@@ -431,12 +317,12 @@ server <- function(input, output, session) {
     output$csvDownload <- downloadHandler(
         filename = function(vote) {
             
-            suchfeld <- gsub(" ", "-", namePerson(), fixed = TRUE) 
-            paste0("Gemeinderatswahlen_", input$select, "_", suchfeld, ".csv")
+            suchfeld <- gsub(" ", "-", data_person()$Name, fixed = TRUE) 
+            paste0("Gemeinderatswahlen_", input$select_year, "_", suchfeld, ".csv")
             
         },
         content = function(file) {
-            write.csv(dataDownload(), file, fileEncoding = "UTF-8", row.names = FALSE, na = " ")
+            write.csv(data_download(), file, fileEncoding = "UTF-8", row.names = FALSE, na = " ")
         }
     )
     
@@ -444,22 +330,15 @@ server <- function(input, output, session) {
     output$excelDownload <- downloadHandler(
         filename = function(vote) {
             
-            suchfeld <- gsub(" ", "-",  namePerson(), fixed = TRUE)
-            paste0("Gemeinderatswahlen_", input$select, "_", suchfeld, ".xlsx")
+            suchfeld <- gsub(" ", "-",  data_person()$Name, fixed = TRUE)
+            paste0("Gemeinderatswahlen_", input$select_year, "_", suchfeld, ".xlsx")
             
         },
         content = function(file) {
-            sszDownloadExcel(dataDownload(), file, namePerson())
+            sszDownloadExcel(data_download(), file, data_person()$Name)
         }
     )
-    
-    output$titleVote <- renderText({
-        req(nameVote())
-        
-        paste("<br><h2>", print(nameVote()), "</h2><hr>")
-    })
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
