@@ -91,7 +91,7 @@ ui <- fluidPage(
             
             # Downloads
             conditionalPanel(
-                condition = 'output.rowSelected',
+                condition = 'output.tableCand',
                 h3("Daten herunterladen"),
                 
                 # Download Panel
@@ -133,16 +133,18 @@ ui <- fluidPage(
                 reactableOutput("table"),
             ),
             
+            # initialise hidden variable for row selection, to be used with JS function
+            conditionalPanel("false",
+                             numericInput(label = NULL, inputId = 'show_details', value = 0)),
+            
+            # Name of selected candidate
+            htmlOutput("nameCandidate"),
+            
+            reactableOutput("tableCand"),
             
             # Only show plot if tableCand is also shown
             conditionalPanel(
-              condition = 'output.rowSelected',
-              
-              # Name of selected candidate
-              htmlOutput("nameCandidate"),
-              
-              reactableOutput("tableCand"),
-              
+              condition = 'output.tableCand',
             
               # Name of selected candidate
               # Title for table
@@ -239,18 +241,32 @@ server <- function(input, output, session) {
                                   outlined = TRUE,
                                   highlight = TRUE,
                                   defaultPageSize = 5,
-                                  onClick = "select",
-                                  selection = "single",
-                                  rowClass = JS("function(rowInfo) {return rowInfo.selected ? 'selected' : ''}"),
-                                  rowStyle = JS("function(rowInfo) {if (rowInfo.selected) { return { backgroundColor: '#F2F2F2'}}}")
+                                  onClick = JS("function(rowInfo, column) {
+    
+    // Send the click event to Shiny, which will be available in input$show_details
+    // Note that the row index starts at 0 in JavaScript, so we add 1
+    if (window.Shiny) {
+      Shiny.setInputValue('show_details', rowInfo.index + 1, { priority: 'event' })
+    }
+  }")
         )
         tableOutput
     })
     
     # Prepare data for second Output
     rowNumber <- reactive({
-        getReactableState("table", "selected")
+      print(input$show_details)
+      input$show_details
     })
+    
+    observeEvent(eventExpr = list(input$suchfeld,input$select_year,
+                                  input$gender_radio_button,
+                                  input$select_kreis, input$select_liste,
+                                  input$wahlstatus_radio_button),
+                 handlerExpr = {
+                   print("setting to zero")
+                   updateNumericInput(session, "show_details", value = 0)},
+                 ignoreNULL = FALSE)
     
     
     dataPerson <- reactive({
@@ -335,6 +351,7 @@ server <- function(input, output, session) {
 
   
     output$nameCandidate <- renderText({
+      req(rowNumber() > 0)
         
         if(!is.null(namePerson())){
         paste("<br><h2>", print(namePerson()), "</h2><hr>")
@@ -342,6 +359,7 @@ server <- function(input, output, session) {
     })
     
     output$tableCand <- renderReactable({
+      req(rowNumber() > 0)
         
         CandInfo <- dataPerson() %>%
             select(-Name, -Wahlkreis, -ListeBezeichnung) %>% 
