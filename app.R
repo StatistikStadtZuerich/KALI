@@ -23,7 +23,6 @@ source("dependencies.R", encoding = "UTF-8")
 source("get_reactables_candidates.R")
 
 dependencies <- getDependencies()
-chart_container <- tags$div(id = "sszvis-chart")
 
 # Define UI
 ui <- fluidPage(
@@ -156,7 +155,8 @@ ui <- fluidPage(
             # Chart container; can't be used in a conditional panel as when the
             # update_data function is called, the UI is not ready yet when JS tries
             # to target container id.
-            chart_container
+            # ID must be "sszvis-chart", as this is what the JS is looking to fill
+            htmlOutput("sszvis-chart")
 
         )
     )
