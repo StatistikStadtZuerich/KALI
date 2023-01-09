@@ -70,7 +70,8 @@ ui <- fluidPage(
             # Example selectInput()
             sszSelectInput("select_liste", "Liste:", 
                           choices = c("Alle Listen"),
-                          selected = "Alle Listen"),
+                          selected = "Alle Listen"
+                          ),
             
             # Example radioButtons() vertical
             sszRadioButtons("wahlstatus_radio_button",
@@ -90,7 +91,7 @@ ui <- fluidPage(
             
             # Downloads
             conditionalPanel(
-                condition = 'output.tableCand',
+                condition = 'output.rowSelected',
                 h3("Daten herunterladen"),
                 
                 # Download Panel
@@ -171,6 +172,7 @@ server <- function(input, output, session) {
     
     # send updated data to json for D3 chart
     update_data <- function(data) {
+      print(glue::glue("sending message {jsonlite::toJSON(data)}"))
         session$sendCustomMessage(
             type="update_data",
             message=jsonlite::toJSON(data)
@@ -179,13 +181,13 @@ server <- function(input, output, session) {
     
     # update selection of lists based on selected year
     observeEvent(input$select_year, {
-      print("update")
       new_choices <-  c('Alle Listen',
                         unique(data[data$Wahljahr == input$select_year,]$ListeBezeichnung))
+      print(glue::glue("update selection with {new_choices}"))
       updateSelectInput(session = session,
                         inputId = 'select_liste',
                         choices = new_choices,
-                        selected = 'Alle Listen')
+                        selected = new_choices[[1]])
     })
     
     # Filter data according to inputs
@@ -361,7 +363,10 @@ server <- function(input, output, session) {
         tableOutput
     })
     
-    observe({ update_data(dataBarchart()) })
+    observe({ 
+      if (global$activeButton) {
+        update_data(dataBarchart()) 
+        }})
     
     
     ## Write Download Table
