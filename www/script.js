@@ -243,3 +243,9 @@ Shiny.addCustomMessageHandler("update_data", function (data) {
   }
 });
 
+// Used to clear the contents of a chart.
+// customMessageHandler requires a function argument to be defined (message),
+// even though it's not needed in this case.
+Shiny.addCustomMessageHandler("clear_chart", function (message) {
+  d3.select(CHART_CONTAINER_ID).selectAll("*").remove();
+});
