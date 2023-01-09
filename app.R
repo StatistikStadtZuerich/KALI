@@ -236,15 +236,8 @@ server <- function(input, output, session) {
                    updateNumericInput(session, "show_details", value = 0)},
                  ignoreNULL = FALSE)
     
-    # turn the show_details into a reactive so it can be used further
-    selected_row_number <- reactive({
-      print(glue::glue("row number selected: {input$show_details}"))
-      input$show_details
-    })
-    
-    
     data_person <- reactive({
-      req(selected_row_number() > 0)
+      req(input$show_details > 0)
         
         person <- filtered_data() %>%
             select(Name, Wahlkreis, ListeBezeichnung, Wahlresultat, 
@@ -253,14 +246,14 @@ server <- function(input, output, session) {
                    `Anteil Stimmen aus veränderten Listen`) %>%
             unique() %>%
             mutate(ID = row_number()) %>%
-            filter(ID == selected_row_number()) %>% 
+            filter(ID == input$show_details) %>% 
             select(-ID)
         person
 
     })
     
     data_download <- reactive({
-      req(selected_row_number() > 0)
+      req(input$show_details > 0)
         person <- filtered_data() %>%
             select(Wahljahr, Name, Alter, Geschlecht, Beruf, Wahlkreis, Liste, 
                    Wahlresultat, `Anzahl Stimmen`, `Parteieigene Stimmen`, 
@@ -268,7 +261,7 @@ server <- function(input, output, session) {
                    `Anteil Stimmen aus veränderten Listen`) %>%
             unique() %>%
             mutate(ID = row_number()) %>%
-            filter(ID == selected_row_number()) %>% 
+            filter(ID == input$show_details) %>% 
             select(-ID) %>% 
             gather(`Result der Wahl`, Wert, -Wahljahr, -Name, -Alter, 
                    -Geschlecht, -Beruf, -Wahlkreis, -Liste)
@@ -278,13 +271,13 @@ server <- function(input, output, session) {
 
     # Render title of selected person
     output$nameCandidate <- renderText({
-      req(selected_row_number() > 0)
+      req(input$show_details > 0)
       paste("<br><h2>", print(data_person()$Name), "</h2><hr>")
     })
     
     # table for selected person
     output$tableCand <- renderReactable({
-      req(selected_row_number() > 0)
+      req(input$show_details > 0)
         
         candidate_info <- data_person() %>%
             select(-Name, -Wahlkreis, -ListeBezeichnung) %>% 
@@ -302,7 +295,7 @@ server <- function(input, output, session) {
                  { 
                    req(global$activeButton == TRUE)
                    
-                   if (selected_row_number() > 0) {
+                   if (input$show_details > 0) {
                      person <- filtered_data() %>%
                        filter(Name == data_person()$Name) %>% 
                        filter(Wahlkreis == data_person()$Wahlkreis) %>% 
