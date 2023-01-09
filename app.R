@@ -32,8 +32,7 @@ ui <- fluidPage(
     # Include CSS
     includeCSS("sszThemeShiny.css"),
     
-    # To conveniently disable select element from the server side.
-    useShinyjs(),
+    # include appropriate dependencies
     dependencies,
     
     # Application Title 
@@ -43,42 +42,42 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             
-            # Example textInput()
+            # Suchfeld: Namensuche
             sszTextInput("suchfeld", "Name:"),
             
         
-            # Example radioButtons() vertical
+            # radioButtons() vertical for gender
             sszRadioButtons("gender_radio_button",
                             label = "Geschlecht:",
                             choices = c("Alle", "Männlich", "Weiblich"),
                             selected = "Alle" # default value
                             ),
             
-            # Example selectInput()
+            # selectInput() for year of election
             sszSelectInput("select_year", "Gemeinderatswahlen:", 
                         choices = unique(data$Wahljahr)),
             
-            # Example selectInput()
+            # selectInput() for Stadtkreis
             sszSelectInput("select_kreis", "Wahlkreis:", 
                         choices = c("Ganz Stadt", "Kreis 1 + 2", "Kreis 3", "Kreis 4 + 5", "Kreis 6",
                                     "Kreis 7 + 8", "Kreis 9", "Kreis 10", "Kreis 11", "Kreis 12"),
                         selected = "Ganz Stadt"),
             
             
-            # Example selectInput()
+            # selectInput() for party
             sszSelectInput("select_liste", "Liste:", 
                           choices = c("Alle Listen"),
                           selected = "Alle Listen"
                           ),
             
-            # Example radioButtons() vertical
+            # radioButtons() vertical for whether the person was elected
             sszRadioButtons("wahlstatus_radio_button",
                             label = "Status:",
                             choices = c("Alle", "gewählt", "nicht gewählt"),
                             selected = "Alle" 
                             ),
             
-            # Action Button
+            # Action Button to start the query and show the resulting table
             conditionalPanel(
                 condition = 'input.ActionButtonId==0',
                 
@@ -86,7 +85,8 @@ ui <- fluidPage(
                                 "Abfrage starten")
             ),
             
-            # Downloads
+            # Downloads - only show these when one person is selected to 
+            # download details about this person
             conditionalPanel(
                 condition = 'output.tableCand',
                 h3("Daten herunterladen"),
@@ -130,13 +130,14 @@ ui <- fluidPage(
                 reactableOutput("table"),
             ),
             
-            # initialise hidden variable for row selection, to be used with JS function
+            # initialise hidden variable for row selection, to be used with JS function in reactable
             conditionalPanel("false",
                              numericInput(label = NULL, inputId = 'show_details', value = 0)),
             
-            # Name of selected candidate
+            # Name of selected candidate - requires show_details > 0
             htmlOutput("nameCandidate"),
             
+            # table with info about selected candidate - requires show_details > 0
             reactableOutput("tableCand"),
             
             # Only show plot if tableCand is also shown
@@ -169,12 +170,12 @@ server <- function(input, output, session) {
         global$activeButton <- TRUE
     })
     
-    # send updated data to json for D3 chart
+    # function to send updated data to json for D3 chart
     update_data <- function(data) {
       print(glue::glue("sending message {jsonlite::toJSON(data)}"))
         session$sendCustomMessage(
-            type="update_data",
-            message=jsonlite::toJSON(data)
+            type = "update_data",
+            message = jsonlite::toJSON(data)
         )
     }
     
@@ -201,14 +202,13 @@ server <- function(input, output, session) {
        
     }) 
     # %>%
-    #     # necessary to get reactive data in D3 chart
     #     bindCache(input$ActionButtonId, input$select_year, input$suchfeld, input$gender_radio_button,
     #               input$select_kreis, input$select_liste, input$wahlstatus_radio_button) %>%
     #     bindEvent(input$ActionButtonId, input$select_year, input$suchfeld, input$gender_radio_button,
     #               input$select_kreis, input$select_liste, input$wahlstatus_radio_button)
     
     
-    # Reactable Output
+    # main Reactable Output
     output$table <- renderReactable({
         
         req(global$activeButton == TRUE)
@@ -266,26 +266,14 @@ server <- function(input, output, session) {
         person
         
     })
-    
-    dataBarchart <- reactive({
-      req(rowNumber() > 0)
-        person <- filteredData() %>%
-            filter(Name == dataPerson()$Name) %>% 
-            filter(Wahlkreis == dataPerson()$Wahlkreis) %>% 
-            filter(ListeBezeichnung == dataPerson()$ListeBezeichnung) %>% 
-            select(Name, StimmeVeraeListe, Value) %>% 
-            filter(!is.na(Value) & Value > 0) %>% 
-            arrange(desc(Value))
-        person
-        
-    })
 
-  
+    # Render title of selected person
     output$nameCandidate <- renderText({
       req(rowNumber() > 0)
       paste("<br><h2>", print(dataPerson()$Name), "</h2><hr>")
     })
     
+    # table for selected person
     output$tableCand <- renderReactable({
       req(rowNumber() > 0)
         
@@ -298,9 +286,19 @@ server <- function(input, output, session) {
         tableOutput
     })
     
+    # create and send data for bar chart
     observe({ 
       req(global$activeButton == TRUE)
-      update_data(dataBarchart()) 
+      req(rowNumber() > 0)
+      person <- filteredData() %>%
+        filter(Name == dataPerson()$Name) %>% 
+        filter(Wahlkreis == dataPerson()$Wahlkreis) %>% 
+        filter(ListeBezeichnung == dataPerson()$ListeBezeichnung) %>% 
+        select(Name, StimmeVeraeListe, Value) %>% 
+        filter(!is.na(Value) & Value > 0) %>% 
+        arrange(desc(Value))
+      
+      update_data(person) 
       })
     
     
@@ -309,7 +307,7 @@ server <- function(input, output, session) {
     output$csvDownload <- downloadHandler(
         filename = function(vote) {
             
-            suchfeld <- gsub(" ", "-", namePerson(), fixed = TRUE) 
+            suchfeld <- gsub(" ", "-", dataPerson()$Name, fixed = TRUE) 
             paste0("Gemeinderatswahlen_", input$select_year, "_", suchfeld, ".csv")
             
         },
@@ -322,12 +320,12 @@ server <- function(input, output, session) {
     output$excelDownload <- downloadHandler(
         filename = function(vote) {
             
-            suchfeld <- gsub(" ", "-",  namePerson(), fixed = TRUE)
+            suchfeld <- gsub(" ", "-",  dataPerson()$Name, fixed = TRUE)
             paste0("Gemeinderatswahlen_", input$select_year, "_", suchfeld, ".xlsx")
             
         },
         content = function(file) {
-            sszDownloadExcel(dataDownload(), file, namePerson())
+            sszDownloadExcel(dataDownload(), file, dataPerson()$Name)
         }
     )
 }
