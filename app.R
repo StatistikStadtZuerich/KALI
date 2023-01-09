@@ -6,7 +6,6 @@ library(lubridate)
 library(openxlsx)
 library(readxl)
 library(reactable)
-library(icons)
 library(shiny)
 library(htmltools)
 library(zuericssstyle)
@@ -26,10 +25,6 @@ source("get_reactables_candidates.R")
 
 dependencies <- getDependencies()
 chart_container <- tags$div(id="sszvis-chart")
-
-# Set the Icon path
-icon <- icon_set("icons/")
-
 
 # Define UI
 ui <- fluidPage(

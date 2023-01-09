@@ -646,31 +646,6 @@
         "openssl"
       ]
     },
-    "icons": {
-      "Package": "icons",
-      "Version": "0.2.0",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "icons",
-      "RemoteUsername": "mitchelloharawild",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "6e4dc378ac86c1d4f4ea167f408bed07b3df14fb",
-      "Hash": "1ca4478a3466cb5d4b30b93c0b33036c",
-      "Requirements": [
-        "cli",
-        "crayon",
-        "glue",
-        "htmltools",
-        "jsonlite",
-        "knitr",
-        "rappdirs",
-        "rlang",
-        "rstudioapi",
-        "stringr",
-        "xml2"
-      ]
-    },
     "ids": {
       "Package": "ids",
       "Version": "1.0.1",
@@ -1500,7 +1475,7 @@
       "RemoteRef": "main",
       "RemoteSha": "cc5ffef56d0481f3ea61ef17f75f00d609daf996",
       "Remotes": "github::daqana/dqshiny",
-      "Hash": "30b9f437c3b4ce98bddf76ae5f664652",
+      "Hash": "81addd37dbc5ec1fce7e783a4b8c1fba",
       "Requirements": [
         "dqshiny",
         "htmltools",
