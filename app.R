@@ -223,11 +223,8 @@ server <- function(input, output, session) {
     })
     
     # Prepare data for second Output
-    rowNumber <- reactive({
-      print(input$show_details)
-      input$show_details
-    })
     
+    # update the show_details to zero when any of the inputs are changed
     observeEvent(eventExpr = list(input$suchfeld,input$select_year,
                                   input$gender_radio_button,
                                   input$select_kreis, input$select_liste,
@@ -236,6 +233,12 @@ server <- function(input, output, session) {
                    print("setting to zero")
                    updateNumericInput(session, "show_details", value = 0)},
                  ignoreNULL = FALSE)
+    
+    # turn the show_details into a reactive so it can be used further
+    rowNumber <- reactive({
+      print(glue::glue("row number selected: {input$show_details}"))
+      input$show_details
+    })
     
     
     dataPerson <- reactive({
@@ -253,19 +256,6 @@ server <- function(input, output, session) {
 
     })
     
-    # Is a row selected?
-    output$rowSelected <- reactive({
-      req(dataPerson())
-      if(nrow(filteredData())>0){
-        rowSelected <- TRUE
-        rowSelected
-      } else {
-        rowSelected <- FALSE
-        rowSelected
-      }
-    })
-    outputOptions(output, 'rowSelected', suspendWhenHidden = FALSE)
-    
     dataDownload <- reactive({
         
         person <- filteredData() %>%
@@ -282,35 +272,14 @@ server <- function(input, output, session) {
         
     })
     
-    namePerson <- reactive({
-        
-        person <- dataPerson()
-        
-        print(person$Name)
-    })
-    
-    nameWahlkreis <- reactive({
-        
-        person <- dataPerson()
-        
-        print(person$Wahlkreis)
-    })
-    nameListe <- reactive({
-        
-        person <- dataPerson()
-        
-        print(person$ListeBezeichnung)
-    })
-    
     dataBarchart <- reactive({
         
-      req(namePerson())
-      req(nameWahlkreis())
-      req(nameListe())
+      req(dataPerson())
+      req(rowNumber() > 0)
         person <- filteredData() %>%
-            filter(Name == namePerson()) %>% 
-            filter(Wahlkreis == nameWahlkreis()) %>% 
-            filter(ListeBezeichnung == nameListe()) %>% 
+            filter(Name == dataPerson()$Name) %>% 
+            filter(Wahlkreis == dataPerson()$Wahlkreis) %>% 
+            filter(ListeBezeichnung == dataPerson()$ListeBezeichnung) %>% 
             select(Name, StimmeVeraeListe, Value) %>% 
             filter(!is.na(Value) & Value > 0) %>% 
             arrange(desc(Value))
@@ -322,8 +291,8 @@ server <- function(input, output, session) {
     output$nameCandidate <- renderText({
       req(rowNumber() > 0)
         
-        if(!is.null(namePerson())){
-        paste("<br><h2>", print(namePerson()), "</h2><hr>")
+        if(!is.null(dataPerson()$Name)){
+        paste("<br><h2>", print(dataPerson()$Name), "</h2><hr>")
         }else{}
     })
     
@@ -371,12 +340,6 @@ server <- function(input, output, session) {
             sszDownloadExcel(dataDownload(), file, namePerson())
         }
     )
-    
-    output$titleVote <- renderText({
-        req(nameVote())
-        
-        paste("<br><h2>", print(nameVote()), "</h2><hr>")
-    })
 }
 
 # Run the application 
