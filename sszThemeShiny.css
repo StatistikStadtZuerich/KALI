@@ -1,19 +1,19 @@
 /********************************
- * SSZ Shiny css
- *******************************/
+* SSZ Shiny css
+*******************************/
 
- /*******************************
- * General Settings
- *******************************/
+/*******************************
+* General Settings
+*******************************/
 
 
 /* Ruler */
 hr {
-  height: 1px;
+  height: 0.2px;
   background-color: #DEDEDE;
   border: none;
   margin-top: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 /* h1 */
@@ -41,6 +41,15 @@ h3 {
   color: #4D4D4D;
   font-size: 18px;
   line-height: 25px;
+  font-weight: 750;
+}
+
+/* h4 Font */
+h4 {
+  font-family: HelveticaNeueLTW05_85Heavy;
+  color: #0F05A0;
+  font-size: 14px;
+  line-height: 23px;
   font-weight: 750;
 }
 
@@ -88,7 +97,7 @@ a:hover {
 }
 
 /* Media Queries */
-@media screen and (max-width: 799px) {
+@media screen and (max-width: 768px) {
   p {
     font-size: 14px;
     line-height: 23px;
@@ -109,9 +118,13 @@ a:hover {
     font-size: 14px;
     line-height: 23px;
   }
+  h4 {
+    font-size: 12px;
+    line-height: 18px;
+  }
   hr {
-  margin-top: 12px;
-  margin-bottom: 16px;
+    margin-top: 12px;
+    margin-bottom: 16px;
   }
 }
 
@@ -136,22 +149,26 @@ a:hover {
     font-size: 14px;
     line-height: 23px;
   }
+  h4 {
+    font-size: 12px;
+    line-height: 18px;
+  }
   hr {
-  margin-top: 12px;
-  margin-bottom: 16px;
+    margin-top: 12px;
+    margin-bottom: 16px;
   }
 }
 
 
- /*******************************
- * Control Labels
- *******************************/
+/*******************************
+* Control Labels
+*******************************/
 
 /* Control Label Font (Radio Button Title) */
 .sszRadioButton-label {
   font-family: HelveticaNeueLTW01_55Roman;
   color: #646464;
-  font-weight: 400;
+  font-weight: 750;
   font-size: 12px;
   line-height: 19px;
   letter-spacing: 0.01em;
@@ -159,10 +176,10 @@ a:hover {
 }
 
 /* Control Label (Date Range, select input, text input) */
-.ssz-label.control-label {
+.ssz-label {
     top: 14px;
     font-family: 'HelveticaNeueLTW01_55Roman';
-    font-weight: 400;
+    font-weight: 750;
     font-size: 12px;
     color: #646464;
     line-height: 19px;
@@ -181,6 +198,37 @@ a:hover {
   font-weight: 100;
 }
 
+/*******************************
+* Context Box
+*******************************/
+
+/* Context Box */
+.well {
+  border-radius: 0px;
+  background-color: transparent;
+  box-shadow: none;
+  border: 0 solid #646464;
+  position: relative;
+  z-index: 0;
+  padding: 0;
+  margin-top: 20px;
+}
+
+
+/*******************************
+* Form Control (Input)
+*******************************/
+
+.form-group {
+  margin-bottom: 0px;
+  margin-top: -10px;
+}
+
+
+/*******************************
+* Radio Buttons
+*******************************/
+
 /* Radio Buttons Label */
 .radioDiv {
   margin-top: 18px;
@@ -189,6 +237,7 @@ a:hover {
 .sszRadioButton {
   margin-top: 10px;
 }
+
 
 /* Radio Buttons Text */
 .radio span {
@@ -210,38 +259,6 @@ a:hover {
   color: #080490;
 }
 
-
- /*******************************
- * Context Box
- *******************************/
-
-/* Context Box */
-.well {
-    border-radius: 0px;
-    background-color: transparent;
-    box-shadow: none;
-    border: 0 solid #646464;
-    position: relative;
-    z-index: 0;
-    padding: 0;
-    margin-top: 20px;
-}
-
-
- /*******************************
- * Form Control (Input)
- *******************************/
-
-.form-group {
-  margin-bottom: 0px;
-  margin-top: -10px;
-}
-
-
- /*******************************
- * Radio Buttons
- *******************************/
-
 /* Radio Buttons Input */
 .radio input[type="radio"]:hover {
   border: 0.05em solid #030033;
@@ -259,10 +276,10 @@ a:hover {
 }
 
 .radio input[type=radio] {
-    margin: 0px 0 0 ;
-    display: inline-grid;
-    margin-left: -1.25em;
-    margin-top: 2px;
+  margin: 0px 0 0 ;
+  display: inline-grid;
+  margin-left: -1.25em;
+  margin-top: 2px;
 }
 
 .radio input[type="radio"] {
@@ -281,8 +298,8 @@ a:hover {
 
 .radio input[type="radio"]::before {
   content: "";
-  width: 0.25em;
-  height: 0.25em;
+  width: 0.5em;
+  height: 0.5em;
   border-radius: 50%;
   transform: scale(0);
   background-color: #646464;
@@ -299,34 +316,29 @@ a:hover {
   outline-offset: max(2px, 0.15em);
 }
 
-.rt-select {
-  visibility:hidden;
-}
-
-
- /*******************************
- * Text Input
- *******************************/
+/*******************************
+* Text Input
+*******************************/
 
 /* Input */
 .form-control {
-    border-color: #646464;
-    outline: 0;
-    border-radius: 2px;
-    height: 40px;
-    box-shadow: none;
-    font-family: HelveticaNeueLTW01_55Roman;
-    font-size: 14px;
-    line-height: 26px;
-    padding: 6px 16px 6px 16px;
+  border-color: #646464;
+  outline: 0;
+  border-radius: 2px;
+  height: 40px;
+  box-shadow: none;
+  font-family: HelveticaNeueLTW01_55Roman;
+  font-size: 14px;
+  line-height: 26px;
+  padding: 6px 16px 6px 16px;
 }
 
 .form-control:hover {
-    background-color: white;
-    color:  #070250;
-    border-color: #070250;
-    padding: 6px 16px 6px 16px;
-    transition: 0.7s;
+  background-color: white;
+  color:  #070250;
+  border-color: #070250;
+  padding: 6px 16px 6px 16px;
+  transition: 0.7s;
 }
 
 .form-control:focus {
@@ -337,28 +349,55 @@ a:hover {
   transition: 0.7s;
 }
 
+/*******************************
+* Autocomplete from daqana/dqshiny
+*******************************/
 
- /*******************************
- * Action Buttons
- *******************************/
+.autocomplete {
+  color: #0F05A0;
+}
+
+/* Autocomplete Drop Down Menu */
+.autocomplete-items div {
+  font-family: HelveticaNeueLTW01_55Roman;
+  font-size: 14px;
+  padding: 6px 16px 6px 20px;
+  line-height: 26px;
+  border-bottom: 0px;
+ }
+
+.autocomplete-items div:hover {
+  background-color: #F2F2F2;
+  color: #070250;
+  z-index: 100;
+ }
+
+.autocomplete-active {
+  background-color: #F2F2F2 !important;
+  color: #070250;
+}
+
+/*******************************
+* Action Buttons
+*******************************/
 
 .btn {
-    background-color: #0F05A0;
-    padding: 9px 24px 9px 24px;
-    border-radius: 3px;
-    border: 0 solid;
-    height: 40px;
-    color: white;
-    font-family: HelveticaNeueLTW01_55Roman;
-    font-size: 14px;
-    line-height: 22px;
-    margin-top: 32px;
+  background-color: #0F05A0;
+  padding: 9px 24px 9px 24px;
+  border-radius: 3px;
+  border: 0 solid;
+  height: 40px;
+  color: white;
+  font-family: HelveticaNeueLTW01_55Roman;
+  font-size: 14px;
+  line-height: 22px;
+  margin-top: 32px;
 }
 
 .btn:hover {
-    background-color: #070250;
-    color: white;
-    transition: 0.7s;
+  background-color: #070250;
+  color: white;
+  transition: 0.7s;
 }
 
 .btn:focus {
@@ -366,6 +405,30 @@ a:hover {
   outline-style: solid;
   background-color: #070250;
   color: white;
+}
+
+button {
+  background-color: #F2F2F2;
+  padding: 4px 12px 4px 12px;
+  border-radius: 30px;
+  border: 0 solid;
+  color: #0F05A0;
+  font-family: HelveticaNeueLTW01_55Roman;
+  font-size: 12px;
+  line-height: 22px;
+}
+
+button:hover {
+  background-color: rgba(15, 5, 160, 0.08);
+  color: #070250;
+  transition: 0.7s;
+}
+
+button:active {
+  background-color: #0F05A0;
+  color: white;
+  outline-color: transparent;
+  transition: 0.7s;
 }
 
 .sszActionButton:active {
@@ -376,89 +439,70 @@ a:hover {
   transition: 0.7s;
 }
 
-button {
-    background-color: #F2F2F2;
-    padding: 4px 12px 4px 12px;
-    border-radius: 30px;
-    border: 0 solid;
-    color: #0F05A0;
-    font-family: HelveticaNeueLTW01_55Roman;
-    font-size: 12px;
-    line-height: 22px;
-}
-
-button:hover {
-    background-color: rgba(15, 5, 160, 0.08);
-    color: #070250;
-    transition: 0.7s;
-}
-
-button:active {
-    background-color: #0F05A0;
-    color: white;
-    outline-color: transparent;
-    outline-style: solid;
-    transition: 0.7s;
+.sszActionButton {
+  stroke: white;
 }
 
 
 /*******************************
- * Reactable
+* Reactable
 *******************************/
 
- /* Table */
+.rt-select {
+  visibility:hidden;
+}
+
+.rt-tbody {
+  font-family: HelveticaNeueLTW01_55Roman;
+}
+
+/* Table */
 .rt-table {
-   font-size: 12px;
-   color: #646464;
-   border: 0px;
- }
+  font-size: 11px;
+  color: #646464;
+  border: 0px;
+}
 
  /* Table Header */
-.rt-thead.-header {
-   color: #0F05A0;
-   font-family: HelveticaNeueLTW05_85Heavy;
- }
+.rt-thead {
+  color: #0F05A0;
+  font-family: HelveticaNeueLTW05_85Heavy;
+  position: relative;
+  min-width: 0px !important;
+  flex: 0;
+}
 
- /* Table Pagination */
+/* Table Pagination */
 .rt-pagination {
   font-size: 12px;
   color: #646464
 }
 
-.rt-page-button {
-    padding: 6px 12px;
-    background-color: transparent;
-    border: none;
-    outline-width: 0;
-    outline-style: solid;
-    cursor: pointer;
-    color: #646464;
-    border-radius: 50px;
+.rt-expander-button:hover {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 0 2px;
+  padding: 0;
 }
 
-.rt-page-button:hover {
-    background-color: rgba(15, 5, 160, 0.08);
-    color: #070250;
-    transition: 0.7s;
+.rt-expander-button:active {
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline-color: transparent;
 }
 
-.rt-page-button:active {
-    background-color: #0F05A0;
-    color: white;
-    outline-color: transparent;
-    outline-style: solid;
-    transition: 0.7s;
-}
-
-.rt-page-button:disabled {
-    opacity: 0;
-    cursor: default;
+.rt-expander-button:focus {
+  background: none;
+  border: none;
+  outline-color: transparent;
 }
 
 /* Activate Background-color and pointer on hover */
 .ReactTable .rt-tr:hover .rt-td {
-    background: #F2F2F2;
-    cursor: pointer;
+  background: #F2F2F2;
+  cursor: pointer;
 }
 
 /* Delete row select */
@@ -466,8 +510,11 @@ button:active {
   display: none;
 }
 
+.rt-th-select {
+  display: none;
+}
 
- /*******************************
+/*******************************
  * Date Range
  *******************************/
 
@@ -639,10 +686,66 @@ button:active {
   color: #646464;
 }
 
-
- /*******************************
- * Select Input
+/*******************************
+ * Airdatepicker
  *******************************/
+
+.airdatepicker {
+    background-color: #fff;
+    box-sizing: border-box;
+    font-family:  "HelveticaNeueLTW01_55Roman";
+    font-size: 14px;
+    color: #4a4a4a;
+    width: 237px;
+    position: fixed;
+    left: -100000px;
+    opacity: 0;
+    padding: 16px;
+    margin: 12px 0 0;
+    border-color: rgb(100 100 100);
+    border: 0px solid rgb(100 100 100);
+    border-radius: 2px;
+    box-shadow: 0px 0px 4px 0px rgb(0 0 0 / 24%);
+}
+
+
+.airdatepicker--content {
+    box-sizing: content-box;
+    padding: 0px;
+    height: auto;
+}
+
+.airdatepicker--cell-month,.airdatepicker--cell-year, .airdatepicker--cell.-current- {
+    height: 45px;
+    width: 45px;
+    margin: 1%;
+    cursor: pointer;
+    border-radius: 50px;
+    display: inline-grid;
+    align-content: center;
+    color: #646464;
+}
+
+.airdatepicker--cell.-selected-, .airdatepicker--cell.-selected-.-current-, .airdatepicker--cell.-selected-.-focus-, .airdatepicker--cell.-focus- {
+    background-color: #0F05A0;
+    border-radius: 50px;
+    height: 45px;
+    margin: 1%;
+    display: inline-grid;
+    align-content: center;
+    color: #fff;
+}
+
+.airdatepicker--nav-title {
+    font-size: 14px;
+    font-family: HelveticaNeueLTW05_85Heavy;
+    color: #646464;
+}
+
+
+/*******************************
+* Select Input
+*******************************/
 
 /* Input */
 .selectize {
@@ -672,9 +775,9 @@ button:active {
 }
 
 .selectize:hover {
-    background-color: #F2F2F2;
-    color: #070250;
-    transition: 0.7s;
+  background-color: #F2F2F2;
+  color: #070250;
+  transition: 0.7s;
 }
 
 .selectize-input.full{
@@ -690,11 +793,11 @@ button:active {
 }
 
 .selectize-input.full:hover {
-    background-color: white;
-    color:  #070250;
-    border-color: #070250;
-    padding: 6px 16px 6px 16px;
-    transition: 0.7s;
+  background-color: white;
+  color:  #070250;
+  border-color: #070250;
+  padding: 6px 16px 6px 16px;
+  transition: 0.7s;
 }
 
 .selectize-input.full:focus {
@@ -706,13 +809,13 @@ button:active {
 }
 
 .selectize-dropdown [data-selectable], .selectize-dropdown .optgroup-header {
-    padding: 9px 20px;
+  padding: 9px 20px;
 }
 
 
- /*******************************
- * Downloads
- *******************************/
+/*******************************
+* Downloads
+*******************************/
 
  /* Donwload Container */
 .downloadWrapperDiv {
@@ -748,9 +851,19 @@ button:active {
     transition: 0.7s;
  }
 
- /*******************************
- * SSZ Fonts
- *******************************/
+
+/*******************************
+* Info Div
+*******************************/
+
+.infoDiv {
+  margin-bottom: 40px;
+}
+
+
+/*******************************
+* SSZ Fonts
+*******************************/
 
 @font-face {
   font-family: HelveticaNeueLTW01_41488878;
