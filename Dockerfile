@@ -1,14 +1,7 @@
 FROM rocker/tidyverse:4.2.1
-RUN install2.r renv
+RUN install2.r rsconnect shiny shinyjs lubridate remotes htmltools Rcpp openxlsx readxl reactable
+RUN Rscript -e "remotes::install_github('StatistikStadtZuerich/zuericssstyle')"
 WORKDIR /home/kali
-
-COPY renv.lock renv.lock
-RUN mkdir -p renv
-COPY .Rprofile .Rprofile
-COPY renv/activate.R renv/activate.R
-COPY renv/settings.dcf renv/settings.dcf
-RUN R -e "renv::restore()"
-
 COPY app.R app.R
 COPY exportExcel.R exportExcel.R
 COPY dependencies.R dependencies.R

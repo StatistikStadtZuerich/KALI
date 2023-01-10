@@ -1,6 +1,5 @@
 # Load Library
 library(shinyjs)
-library(magrittr)
 library(tidyverse)
 library(lubridate)
 library(openxlsx)
