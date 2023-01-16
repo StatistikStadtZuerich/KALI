@@ -10,10 +10,11 @@ library(htmltools)
 library(zuericssstyle)
 
 # Source Prepared Data
-source("R/prepareData.R", encoding = "UTF-8")
+source("R/get_data.R", encoding = "UTF-8")
+data <- get_data()
 
 # Source Export Excel
-source("R/exportExcel.R", encoding = "UTF-8")
+source("R/ssz_download_excel.R", encoding = "UTF-8")
 
 # source functions to prepare reactables
 source("R/get_reactables_candidates.R")
@@ -207,12 +208,6 @@ server <- function(input, output, session) {
         filter(if (input$wahlstatus_radio_button != "Alle") Wahlresultat == input$wahlstatus_radio_button else TRUE)
        
     }) 
-    # %>%
-    #     bindCache(input$ActionButtonId, input$select_year, input$suchfeld, input$gender_radio_button,
-    #               input$select_kreis, input$select_liste, input$wahlstatus_radio_button) %>%
-    #     bindEvent(input$ActionButtonId, input$select_year, input$suchfeld, input$gender_radio_button,
-    #               input$select_kreis, input$select_liste, input$wahlstatus_radio_button)
-    
     
     # main Reactable Output
     output$table <- renderReactable({
@@ -335,7 +330,7 @@ server <- function(input, output, session) {
             
         },
         content = function(file) {
-            sszDownloadExcel(data_download(), file, data_person()$Name)
+          ssz_download_excel(data_download(), file, data_person()$Name)
         }
     )
 }

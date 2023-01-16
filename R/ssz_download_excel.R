@@ -1,4 +1,4 @@
-sszDownloadExcel <- function(filteredData, file, nameVote){
+ssz_download_excel <- function(filteredData, file, nameVote){
     
     # Data Paths
     hauptPfad <- "Titelblatt.xlsx"
