@@ -28,7 +28,7 @@ dependencies <- getDependencies()
 ui <- fluidPage(
     
     # Include CSS
-    includeCSS("sszThemeShiny.css"),
+    includeCSS("www/sszThemeShiny.css"),
     
     # include appropriate dependencies
     dependencies,
