@@ -10,16 +10,16 @@ library(htmltools)
 library(zuericssstyle)
 
 # Source Prepared Data
-source("prepareData.R", encoding = "UTF-8")
+source("R/prepareData.R", encoding = "UTF-8")
 
 # Source Export Excel
-source("exportExcel.R", encoding = "UTF-8")
+source("R/exportExcel.R", encoding = "UTF-8")
+
+# source functions to prepare reactables
+source("R/get_reactables_candidates.R")
 
 # Source Dependencies
 source("dependencies.R", encoding = "UTF-8")
-
-# source functions to prepare reactables
-source("get_reactables_candidates.R")
 
 dependencies <- getDependencies()
 
