@@ -20,7 +20,7 @@ source("R/ssz_download_excel.R", encoding = "UTF-8")
 source("R/get_reactables_candidates.R")
 
 # Source Dependencies
-source("dependencies.R", encoding = "UTF-8")
+source("R/dependencies.R", encoding = "UTF-8")
 
 dependencies <- getDependencies()
 
