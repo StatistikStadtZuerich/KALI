@@ -7,7 +7,11 @@ library(readxl)
 library(reactable)
 library(shiny)
 library(htmltools)
+library(icons)
 library(zuericssstyle)
+
+# Set the Icon path
+ssz_icons <- icon_set("www/icons/")
 
 # Source Prepared Data
 source("R/get_data.R", encoding = "UTF-8")
@@ -95,15 +99,20 @@ ui <- fluidPage(
                     id = "downloadWrapperId",
                     class = "downloadWrapperDiv",
                     
-                    sszDownload("csvDownload",
-                                label = "csv"
+                    sszDownloadButton(
+                      outputId = "csvDownload",
+                      label = "csv",
+                      image = img(ssz_icons$download)
                     ),
-                    sszDownload("excelDownload",
-                                label = "xlsx"
+                    sszDownloadButton(
+                      outputId = "excelDownload",
+                      label = "xlsx",
+                      image = img(ssz_icons$download)
                     ),
-                    sszOgdDownload(inputId = "ogdDown",
+                    sszOgdDownload(outputId = "ogdDown",
                                    label = "OGD",
-                                   onclick = "window.open('https://data.stadt-zuerich.ch/dataset?q=Kandidierende&sort=score+desc%2C+date_last_modified+desc', '_blank')"
+                                   image = img(ssz_icons("external-link")),
+                                   href = "https://data.stadt-zuerich.ch/dataset?q=Kandidierende&sort=score+desc%2C+date_last_modified+desc"
                     )
                 )
             )
