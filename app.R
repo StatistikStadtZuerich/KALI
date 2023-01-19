@@ -132,10 +132,7 @@ ui <- fluidPage(
                 h1("Die untenstehenden Vorlagen entsprechen Ihren Suchkriterien"),
                 hr(),
                 # Define subtitle
-                tags$div(
-                    class = "infoDiv",
-                    p("Für Detailinformationen zur Stimmbeteiligung und zum Ergebnis einer Abstimmung wählen Sie eine Zeile aus.")
-                ),
+                p("Für Detailinformationen zur Stimmbeteiligung und zum Ergebnis einer Abstimmung wählen Sie eine Zeile aus."),
                 
                 # Example Table Output 
                 reactableOutput("table"),
