@@ -38,9 +38,6 @@ ui <- fluidPage(
     # include appropriate dependencies
     dependencies,
     
-    # Application Title 
-    titlePanel("Kandidierendenlisten App"),
-    
     # Sidebar: Input widgets are placed here
     sidebarLayout(
         sidebarPanel(
@@ -129,10 +126,10 @@ ui <- fluidPage(
                 condition = "input.ActionButtonId>0",
                 
                 # Title for table
-                h1("Die untenstehenden Vorlagen entsprechen Ihren Suchkriterien"),
+                h1("Die untenstehenden Kandidierenden entsprechen Ihren Suchkriterien"),
                 hr(),
                 # Define subtitle
-                p("Für Detailinformationen zur Stimmbeteiligung und zum Ergebnis einer Abstimmung wählen Sie eine Zeile aus."),
+                p("Für Detailinformationen zu den erhaltenen Stimmen einer Person wählen Sie eine Zeile aus."),
                 
                 # Example Table Output 
                 reactableOutput("table"),
