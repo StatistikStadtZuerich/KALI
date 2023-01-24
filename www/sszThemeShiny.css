@@ -159,11 +159,6 @@ a:hover {
   }
 }
 
-/* svg (own class because inline css from path overwrites general css) */
-path {
-  stroke: #0F05A0;
-}
-
 
 /*******************************
 * Context Box
@@ -883,6 +878,7 @@ button:active {
     line-height: 22px;
     padding: 2px 6px 2px 6px;
     text-align: center;
+    stroke: #0F05A0;
 }
 
 /* Button Hover */
@@ -894,8 +890,28 @@ button:active {
     transition: 0.5s;
 }
 
+.sszDownload:focus, .sszDownload:active {
+  text-decoration:none;
+}
+
+.sszDownload path {
+  stroke: #0F05A0;
+}
+
 .sszDownload:hover path {
   stroke: white;
+  transition: 0.5s;
+}
+
+/*******************************
+* Link
+*******************************/
+
+a:focus {
+  color: #0F05A0;
+}
+
+a:hover {
   transition: 0.5s;
 }
 
