@@ -92,7 +92,7 @@ ui <- fluidPage(
             # download details about this person
             conditionalPanel(
                 condition = "output.tableCand",
-                h3("Daten herunterladen"),
+                h3("Detailinformationen herunterladen"),
                 
                 # Download Panel
                 tags$div(
