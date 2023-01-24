@@ -2,30 +2,31 @@ library("tidyverse")
 library("httr")
 library("data.table")
 library("lubridate")
+library("furrr")
 
 get_data <- function() {
   
-  ## Join data
-  # df has information about candidates (incumbent status is only in this df)
-  data_2022 <- data.table::fread(
-    "https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2022_kandidierende/download/gemeinderatswahlen_2022_kandidierende.csv", 
-    encoding = "UTF-8") %>% 
-    mutate(Wahljahr = 2022)
-  data_2018 <- data.table::fread(
-    "https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2018_kandidierende/download/gemeinderatswahlen_2018_kandidierende.csv", 
-    encoding = "UTF-8") %>% 
-    mutate(Wahljahr = 2018)
-  data_2014 <- data.table::fread(
-    "https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2014-alle-kandidierenden/download/GRW-2014-alle-Kandidierenden-OGD.csv", 
-    encoding = "UTF-8") %>% 
-    mutate(Wahljahr = 2014)
-  data_2010 <- data.table::fread(
-    "https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2010_kandidierende/download/gemeinderatswahlen_2010_kandidierende.csv", 
-    encoding = "UTF-8") %>% 
-    mutate(Wahljahr = 2010)
+  ### Candidates
+  ## Years
+  years <- c(2022, 2018, 2014, 2010)
   
-  df <- data_2022 %>% 
-    bind_rows(data_2018, data_2014, data_2010) %>% 
+  ## URLs
+  URLs_cand <- c(
+    "https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2022_kandidierende/download/gemeinderatswahlen_2022_kandidierende.csv",
+    "https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2018_kandidierende/download/gemeinderatswahlen_2018_kandidierende.csv",
+    "https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2014-alle-kandidierenden/download/GRW-2014-alle-Kandidierenden-OGD.csv",
+    "https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2010_kandidierende/download/gemeinderatswahlen_2010_kandidierende.csv"
+  )
+  
+  ## Function to download the data from Open Data Zürich
+  data_download <- function(link, year) {
+    data <- data.table::fread(link,
+                              encoding = "UTF-8") %>% 
+      mutate(Wahljahr = year)
+  }
+  
+  ## Download and Rename
+  data_cand <- furrr::future_map2_dfr(URLs_cand, years, data_download) %>% 
     mutate(G = case_when(
       G == "M" ~ "Männlich",
       G == "W" ~ "Weiblich"
@@ -36,8 +37,12 @@ get_data <- function() {
            Nachname = trimws(Nachname),
            Wahlkreis = trimws(Wahlkreis))
   
-  
-  rm(data_2022, data_2018, data_2014, data_2010)
+  ### Results
+  URLs_result <- c(
+    "https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2022_resultate/download/GRW_2022_resultate_kandidierende_und_herkunft_der_stimmen.csv",
+    "https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2018_resultate/download/GRW_2018_resultate_und_herkunft_der_stimmen.csv",
+    "https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2014-resultate/download/GRW_2014_Resultate_und_Herkunft_der_Stimmen_Nachzahlung_v2.csv"
+  )
   
   ## Function to make data long to wide
   data_prep <- function(data){
@@ -50,26 +55,16 @@ get_data <- function() {
       rename(ListeBezeichnung = Liste_Bez_lang)
   }
   
-  ### Load Data
-  # df with information about result of election
-  data22 <- data.table::fread(
-    "https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2022_resultate/download/GRW_2022_resultate_kandidierende_und_herkunft_der_stimmen.csv", 
-    encoding = "UTF-8") %>% 
-    mutate(Wahljahr = 2022) %>% 
-    data_prep()
+  ## Function to download the data from Open Data Zürich
+  data_download_prep <- function(link, year) {
+    data_download(link, year) %>% 
+      data_prep()
+  }
   
-  data18 <- data.table::fread(
-    "https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2018_resultate/download/GRW_2018_resultate_und_herkunft_der_stimmen.csv", 
-    encoding = "UTF-8") %>% 
-    mutate(Wahljahr = 2018) %>% 
-    data_prep()
+  ## Parallelisation Download (3 out of 4 Datasets)
+  data_result_22_14 <- furrr::future_map2_dfr(URLs_result, years[1:3], data_download_prep)
   
-  data14 <- data.table::fread(
-    "https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2014-resultate/download/GRW_2014_Resultate_und_Herkunft_der_Stimmen_Nachzahlung_v2.csv", 
-    encoding = "UTF-8") %>% 
-    mutate(Wahljahr = 2014) %>% 
-    data_prep()
-  
+  # Separate Download as Columns have different names
   data10 <- data.table::fread(
     "https://data.stadt-zuerich.ch/dataset/politik_gemeinderatswahlen_2010_resultate/download/GRW_2010_resultate_kandidierende_und_herkunft_der_stimmen.csv", 
     encoding = "UTF-8") %>% 
@@ -77,20 +72,18 @@ get_data <- function() {
     rename(Liste_Bez_lang = Liste, Wahlresultat = Wahlergebnis) %>% 
     data_prep() %>% 
     mutate(ListeBezeichnung = gsub(".*– ", "", ListeBezeichnung))
-  # Was passiert mit Wahlresultat = "rückt nach"?
   
-  
-  df_det <- bind_rows(data22, data18, data14, data10) %>% 
+  # Combine Downloads
+  df_det <- bind_rows(data_result_22_14, data10) %>% 
     mutate(ListeBezeichnung = trimws(ListeBezeichnung),
            Vorname = trimws(Vorname),
            Nachname = trimws(Nachname),
            Wahlkreis = trimws(Wahlkreis)) 
   
-  rm(data22, data18, data14, data10)
+  rm(data_result_22_14, data10)
   
-  
-  ### Join df_det with df
-  data <- df %>%
+  ### Data Manipulation
+  data <- data_cand %>%
     left_join(df_det, by = c("Wahljahr", 
                              "Vorname", 
                              "Nachname", 
@@ -129,8 +122,8 @@ get_data <- function() {
     )) %>% 
     mutate(
       `Anteil Stimmen aus veränderten Listen` = as.character(
-        round(100*(1-(part_eig_stim_unv_wl/total_stim)),1))
-      ) %>% 
+        round(100*(1 - (part_eig_stim_unv_wl/total_stim)), 1))
+    ) %>% 
     mutate(
       `Anteil Stimmen aus veränderten Listen` = paste(`Anteil Stimmen aus veränderten Listen`, 
                                                       "%", sep = " ")
@@ -140,4 +133,5 @@ get_data <- function() {
            `Parteieigene Stimmen` = part_eig_stim,
            `Parteifremde Stimmen` = part_frmd_stim
     ) 
+  
 }
