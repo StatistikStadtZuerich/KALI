@@ -1,5 +1,5 @@
 FROM rocker/tidyverse:4.2.1
-RUN install2.r rsconnect shiny shinyjs lubridate remotes htmltools Rcpp openxlsx readxl reactable
+RUN install2.r rsconnect shiny shinyjs lubridate remotes htmltools Rcpp openxlsx readxl reactable furrr
 RUN Rscript -e "remotes::install_github('StatistikStadtZuerich/zuericssstyle')"
 RUN Rscript -e "remotes::install_github('mitchelloharawild/icons')"
 WORKDIR /home/kali
