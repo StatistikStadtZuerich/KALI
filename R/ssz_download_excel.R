@@ -63,12 +63,22 @@ ssz_download_excel <- function(filteredData, file, nameVote){
     addStyle(wb, 2, style = styConcept, row = 9, cols = 1:50, gridExpand = TRUE)
     modifyBaseFont(wb, fontSize = 8, fontName = "Arial")
     
-    # Set Column Width
+    # Set Column Width for content
+    setColWidths(wb, sheet = 2, cols = "A", widths = 10)
+    setColWidths(wb, sheet = 2, cols = "B", widths = 40)
+    setColWidths(wb, sheet = 2, cols = "C", widths = 8)
+    setColWidths(wb, sheet = 2, cols = "D", widths = 12)
+    setColWidths(wb, sheet = 2, cols = "E", widths = 40)
+    setColWidths(wb, sheet = 2, cols = "F", widths = 15)
+    setColWidths(wb, sheet = 2, cols = "G", widths = 40)
+    setColWidths(wb, sheet = 2, cols = "H", widths = 35)
+    setColWidths(wb, sheet = 2, cols = "I", widths = 12)
+    
+    # Set Column Width for overview sheet
     setColWidths(wb, sheet = 1, cols = "A", widths = 1)
     setColWidths(wb, sheet = 1, cols = "B", widths = 4)
     setColWidths(wb, sheet = 1, cols = "D", widths = 40)
-    setColWidths(wb, sheet = 1, cols = "5", widths = 8)
-    
+    setColWidths(wb, sheet = 1, cols = "E", widths = 10)
     
     # Save Excel
     saveWorkbook(wb, file, overwrite = TRUE) ## save to working directory
