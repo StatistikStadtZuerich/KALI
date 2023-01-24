@@ -240,7 +240,7 @@ server <- function(input, output, session) {
       req(input$show_details > 0)
         
         person <- filtered_data() %>%
-            select(Name, Wahlkreis, ListeBezeichnung, Wahlresultat, 
+            select(Name, Wahlkreis, ListeBezeichnung, Liste, Wahlresultat, 
                    `Anzahl Stimmen`, `Parteieigene Stimmen`, 
                    `Parteifremde Stimmen`,
                    `Anteil Stimmen aus veränderten Listen`) %>%
@@ -272,7 +272,7 @@ server <- function(input, output, session) {
     # Render title of selected person
     output$nameCandidate <- renderText({
       req(input$show_details > 0)
-      paste("<br><h2>", print(data_person()$Name), "</h2><hr>")
+      paste0("<br><h2>", print(data_person()$Name), " (", print(data_person()$Liste), ")", "</h2><hr>")
     })
     
     # table for selected person
@@ -280,7 +280,7 @@ server <- function(input, output, session) {
       req(input$show_details > 0)
         
         candidate_info <- data_person() %>%
-            select(-Name, -Wahlkreis, -ListeBezeichnung) %>% 
+            select(-Name, -Wahlkreis, -ListeBezeichnung, -Liste) %>% 
             gather(`Detailinformationen zu den erhaltenen Stimmen`, Wert)
 
 
