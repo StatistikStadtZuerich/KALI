@@ -129,7 +129,7 @@ ui <- fluidPage(
                 h1("Die untenstehenden Kandidierenden entsprechen Ihren Suchkriterien"),
                 hr(),
                 # Define subtitle
-                p("Für Detailinformationen zu den erhaltenen Stimmen einer Person wählen Sie eine Zeile aus."),
+                p("Für Detailinformationen zu den Ergebnissen einzelner Kandidierenden wählen Sie eine Zeile aus."),
                 
                 # Example Table Output 
                 reactableOutput("table"),
