@@ -11,6 +11,7 @@ COPY R/get_reactables_candidates.R R/get_reactables_candidates.R
 COPY www/logo_stzh_stat_sw_pos_1.png www/logo_stzh_stat_sw_pos_1.png
 COPY R/get_data.R R/get_data.R
 COPY www/sszThemeShiny.css www/sszThemeShiny.css
+COPY www/KALI.css www/KALI.css
 COPY www/Titelblatt.xlsx www/Titelblatt.xlsx
 COPY www/icons/download.svg www/icons/download.svg
 COPY www/icons/external-link.svg www/icons/external-link.svg
