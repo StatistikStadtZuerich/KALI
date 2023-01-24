@@ -34,6 +34,7 @@ ui <- fluidPage(
     
     # Include CSS
     includeCSS("www/sszThemeShiny.css"),
+    includeCSS("www/KALI.css"),
     
     # include appropriate dependencies
     dependencies,
