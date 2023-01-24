@@ -7,11 +7,16 @@ library(readxl)
 library(reactable)
 library(shiny)
 library(htmltools)
+library(icons)
 library(zuericssstyle)
+
+# Set the Icon path
+ssz_icons <- icon_set("www/icons/")
 
 # Source Prepared Data
 source("R/get_data.R", encoding = "UTF-8")
 data <- get_data()
+unique_wj <- sort(unique(data$Wahljahr))
 
 # Source Export Excel
 source("R/ssz_download_excel.R", encoding = "UTF-8")
@@ -33,30 +38,29 @@ ui <- fluidPage(
     # include appropriate dependencies
     dependencies,
     
-    # Application Title 
-    titlePanel("Kandidierendenlisten App"),
-    
     # Sidebar: Input widgets are placed here
     sidebarLayout(
         sidebarPanel(
             
             # Suchfeld: Namensuche
-            sszTextInput("suchfeld", "Name:"),
+            sszTextInput("suchfeld", "Name"),
             
         
             # radioButtons() vertical for gender
             sszRadioButtons("gender_radio_button",
-                            label = "Geschlecht:",
+                            label = "Geschlecht",
                             choices = c("Alle", "Männlich", "Weiblich"),
                             selected = "Alle" # default value
                             ),
             
             # selectInput() for year of election
-            sszSelectInput("select_year", "Gemeinderatswahlen:", 
-                        choices = unique(data$Wahljahr)),
+            sszSelectInput("select_year", "Gemeinderatswahlen", 
+                        choices = unique_wj,
+                        selected = unique_wj[[length(unique_wj)]]
+                        ),
             
             # selectInput() for Stadtkreis
-            sszSelectInput("select_kreis", "Wahlkreis:", 
+            sszSelectInput("select_kreis", "Wahlkreis", 
                         choices = c("Ganz Stadt", "Kreis 1 + 2", "Kreis 3", 
                                     "Kreis 4 + 5", "Kreis 6", "Kreis 7 + 8", 
                                     "Kreis 9", "Kreis 10", "Kreis 11", 
@@ -65,14 +69,14 @@ ui <- fluidPage(
             
             
             # selectInput() for party
-            sszSelectInput("select_liste", "Liste:", 
+            sszSelectInput("select_liste", "Liste", 
                           choices = c("Alle Listen"),
                           selected = "Alle Listen"
                           ),
             
             # radioButtons() vertical for whether the person was elected
             sszRadioButtons("wahlstatus_radio_button",
-                            label = "Status:",
+                            label = "Status",
                             choices = c("Alle", "gewählt", "nicht gewählt"),
                             selected = "Alle" 
                             ),
@@ -88,22 +92,27 @@ ui <- fluidPage(
             # download details about this person
             conditionalPanel(
                 condition = "output.tableCand",
-                h3("Daten herunterladen"),
+                h3("Detailinformationen herunterladen"),
                 
                 # Download Panel
                 tags$div(
                     id = "downloadWrapperId",
                     class = "downloadWrapperDiv",
                     
-                    sszDownload("csvDownload",
-                                label = "csv"
+                    sszDownloadButton(
+                      outputId = "csvDownload",
+                      label = "csv",
+                      image = img(ssz_icons$download)
                     ),
-                    sszDownload("excelDownload",
-                                label = "xlsx"
+                    sszDownloadButton(
+                      outputId = "excelDownload",
+                      label = "xlsx",
+                      image = img(ssz_icons$download)
                     ),
-                    sszOgdDownload(inputId = "ogdDown",
+                    sszOgdDownload(outputId = "ogdDown",
                                    label = "OGD",
-                                   onclick = "window.open('https://data.stadt-zuerich.ch/dataset?q=Kandidierende&sort=score+desc%2C+date_last_modified+desc', '_blank')"
+                                   image = img(ssz_icons("external-link")),
+                                   href = "https://data.stadt-zuerich.ch/dataset?q=Kandidierende&sort=score+desc%2C+date_last_modified+desc"
                     )
                 )
             )
@@ -117,13 +126,10 @@ ui <- fluidPage(
                 condition = "input.ActionButtonId>0",
                 
                 # Title for table
-                h1("Die untenstehenden Vorlagen entsprechen Ihren Suchkriterien"),
+                h1("Die untenstehenden Kandidierenden entsprechen Ihren Suchkriterien"),
                 hr(),
                 # Define subtitle
-                tags$div(
-                    class = "infoDiv",
-                    p("Für Detailinformationen zur Stimmbeteiligung und zum Ergebnis einer Abstimmung wählen Sie eine Zeile aus.")
-                ),
+                p("Für Detailinformationen zu den Ergebnissen einzelner Kandidierenden wählen Sie eine Zeile aus."),
                 
                 # Example Table Output 
                 reactableOutput("table"),
