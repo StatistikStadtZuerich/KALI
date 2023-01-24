@@ -184,7 +184,6 @@ server <- function(input, output, session) {
     
     # function to send updated data to json for D3 chart
     update_data <- function(data) {
-      print(glue::glue("sending message {jsonlite::toJSON(data)}"))
         session$sendCustomMessage(
             type = "update_data",
             message = jsonlite::toJSON(data)
@@ -197,7 +196,6 @@ server <- function(input, output, session) {
         "Alle Listen",
         unique(data[data$Wahljahr == input$select_year, ]$ListeBezeichnung)
         )
-      print(glue::glue("update selection with {new_choices}"))
       updateSelectInput(session = session,
                         inputId = "select_liste",
                         choices = new_choices,
@@ -233,7 +231,6 @@ server <- function(input, output, session) {
                                   input$select_kreis, input$select_liste,
                                   input$wahlstatus_radio_button),
                  handlerExpr = {
-                   print("setting to zero")
                    updateNumericInput(session, "show_details", value = 0)},
                  ignoreNULL = FALSE)
     
@@ -273,7 +270,7 @@ server <- function(input, output, session) {
     # Render title of selected person
     output$nameCandidate <- renderText({
       req(input$show_details > 0)
-      paste0("<br><h2>", print(data_person()$Name), " (", print(data_person()$Liste), ")", "</h2><hr>")
+      paste0("<br><h2>", data_person()$Name, " (", data_person()$Liste, ")", "</h2><hr>")
     })
     
     # table for selected person
