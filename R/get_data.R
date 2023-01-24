@@ -133,5 +133,4 @@ get_data <- function() {
            `Parteieigene Stimmen` = part_eig_stim,
            `Parteifremde Stimmen` = part_frmd_stim
     ) 
-  
 }
