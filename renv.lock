@@ -449,6 +449,27 @@
       "Hash": "7c89603d81793f0d5486d91ab1fc6f1d",
       "Requirements": []
     },
+    "fst": {
+      "Package": "fst",
+      "Version": "0.9.8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "34637e000c63c3de8d8aafceb82fd082",
+      "Requirements": [
+        "Rcpp",
+        "fstcore"
+      ]
+    },
+    "fstcore": {
+      "Package": "fstcore",
+      "Version": "0.9.14",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "4b8819aaa8d1ce9b0f999d23ad24f96b",
+      "Requirements": [
+        "Rcpp"
+      ]
+    },
     "furrr": {
       "Package": "furrr",
       "Version": "0.3.1",
@@ -613,6 +634,16 @@
         "tibble",
         "tidyselect",
         "vctrs"
+      ]
+    },
+    "here": {
+      "Package": "here",
+      "Version": "1.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "24b224366f9c2e7534d2344d10d59211",
+      "Requirements": [
+        "rprojroot"
       ]
     },
     "highr": {
@@ -1169,6 +1200,14 @@
         "yaml"
       ]
     },
+    "rprojroot": {
+      "Package": "rprojroot",
+      "Version": "2.0.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "1de7ab598047a87bba48434ba35d497d",
+      "Requirements": []
+    },
     "rsconnect": {
       "Package": "rsconnect",
       "Version": "0.8.29",
@@ -1589,7 +1628,7 @@
       "RemoteRef": "main",
       "RemoteSha": "29845077f8cfb645d23f10910680b4a281adb6b9",
       "Remotes": "github::daqana/dqshiny",
-      "Hash": "e8ed377864caba005b9581bddfcfd6de",
+      "Hash": "ec63770f042db5f92791a80511199beb",
       "Requirements": [
         "dqshiny",
         "htmltools",

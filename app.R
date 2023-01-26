@@ -9,13 +9,14 @@ library(shiny)
 library(htmltools)
 library(icons)
 library(zuericssstyle)
+library(fst)
 
 # Set the Icon path
 ssz_icons <- icon_set("www/icons/")
 
 # Source Prepared Data
-source("R/get_data.R", encoding = "UTF-8")
-data <- get_data()
+#source("R/get_data.R", encoding = "UTF-8")
+data <- read.fst(file.path("data", "data_KALI.fst"))
 unique_wj <- sort(unique(data$Wahljahr))
 
 # Source Export Excel
