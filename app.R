@@ -15,7 +15,6 @@ library(fst)
 ssz_icons <- icon_set("www/icons/")
 
 # Source Prepared Data
-#source("R/get_data.R", encoding = "UTF-8")
 data <- read.fst(file.path("data", "data_KALI.fst"))
 unique_wj <- sort(unique(data$Wahljahr))
 
@@ -175,14 +174,6 @@ ui <- fluidPage(
 # Server function
 server <- function(input, output, session) {
     
-    # First button click to activate search, after not necessary anymore
-    global <- reactiveValues(activeButton = FALSE)
-    
-    observeEvent(input$ActionButtonId, {
-        req(input$ActionButtonId)
-        global$activeButton <- TRUE
-    })
-    
     # function to send updated data to json for D3 chart
     update_data <- function(data) {
         session$sendCustomMessage(
@@ -218,7 +209,7 @@ server <- function(input, output, session) {
     # main Reactable Output
     output$table <- renderReactable({
         
-        req(global$activeButton == TRUE)
+        req(input$ActionButtonId > 0)
         
         table_output <- get_reactable_candidates(filtered_data())
         table_output
@@ -292,7 +283,7 @@ server <- function(input, output, session) {
     # the data and setting the input$show_details/the selected row number
     observeEvent(input$show_details,
                  { 
-                   req(global$activeButton == TRUE)
+                   req(input$ActionButtonId > 0)
                    
                    if (input$show_details > 0) {
                      person <- filtered_data() %>%
