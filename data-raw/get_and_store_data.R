@@ -1,8 +1,8 @@
-library("tidyverse")
-library("httr")
-library("data.table")
-library("lubridate")
-library("furrr")
+library(tidyverse)
+library(httr)
+library(data.table)
+library(lubridate)
+library(furrr)
 library(fst)
 
 get_data <- function() {
@@ -26,7 +26,7 @@ get_data <- function() {
       mutate(Wahljahr = year)
   }
   
-  ## Download and Rename
+  ## Download and Rename and wrangle as required
   data_cand <- furrr::future_map2_dfr(URLs_cand, years, data_download) %>% 
     mutate(G = case_when(
       G == "M" ~ "Männlich",
@@ -36,7 +36,13 @@ get_data <- function() {
     mutate(ListeBezeichnung = trimws(ListeBezeichnung),
            Vorname = trimws(Vorname),
            Nachname = trimws(Nachname),
-           Wahlkreis = trimws(Wahlkreis))
+           Wahlkreis = trimws(Wahlkreis)) %>% 
+    select(-A, -Kand, -Liste) %>%
+    mutate(
+      Name = paste(Vorname, Nachname, sep = " "),
+      Wahlkreis = paste("Kreis", Wahlkreis, sep = " ")
+    ) %>% 
+    select(-Vorname, -Nachname) 
   
   ### Results
   URLs_result <- c(
@@ -45,7 +51,7 @@ get_data <- function() {
     "https://data.stadt-zuerich.ch/dataset/politik-gemeinderatswahlen-2014-resultate/download/GRW_2014_Resultate_und_Herkunft_der_Stimmen_Nachzahlung_v2.csv"
   )
   
-  ## Function to make data long to wide
+  ## Function to make data long to wide, and wrangle data
   data_prep <- function(data){
     data %>% 
       select(Wahljahr, Liste_Bez_lang, Wahlkreis, Nachname, Vorname, 
@@ -53,7 +59,36 @@ get_data <- function() {
       gather(Var, Value, -Wahljahr, -Liste_Bez_lang, -Wahlkreis, -Nachname, 
              -Vorname, -Wahlresultat, -total_stim, -starts_with("part")) %>% 
       mutate(Value = as.numeric(Value)) %>% 
-      rename(ListeBezeichnung = Liste_Bez_lang)
+      rename(ListeBezeichnung = Liste_Bez_lang) %>% 
+      mutate(StimmeVeraeListe = str_remove_all(Var, "stim_verae_wl_")) %>% 
+      mutate(Wahlresultat = stringr::str_replace(Wahlresultat, "ae", "ä")) %>% 
+      mutate(ListeBezeichnung = trimws(ListeBezeichnung),
+             Vorname = trimws(Vorname),
+             Nachname = trimws(Nachname),
+             Wahlkreis = trimws(Wahlkreis)) %>%
+      mutate(
+        Name = paste(Vorname, Nachname, sep = " "),
+        Wahlkreis = paste("Kreis", Wahlkreis, sep = " ")
+      ) %>% 
+      select(-Vorname, -Nachname) %>% 
+      mutate(StimmeVeraeListe = case_when(
+        StimmeVeraeListe == "Gruene" ~ "Grüne",
+        StimmeVeraeListe == "evp_bdp" ~ "EVP/BDP",
+        StimmeVeraeListe == "DieMitte" ~ "Die Mitte",
+        StimmeVeraeListe == "ILoveZH" ~ "I Love ZH",
+        TRUE ~ StimmeVeraeListe
+      )) %>% 
+      mutate(
+        `Anteil Stimmen aus veränderten Listen` = as.character(
+          round(100*(1 - (part_eig_stim_unv_wl/total_stim)), 1))
+      ) %>% 
+      mutate(
+        `Anteil Stimmen aus veränderten Listen` = paste(`Anteil Stimmen aus veränderten Listen`, 
+                                                        "%", sep = " ")
+      ) %>% 
+      rename(`Anzahl Stimmen` = total_stim,
+             `Parteieigene Stimmen` = part_eig_stim,
+             `Parteifremde Stimmen` = part_frmd_stim)
   }
   
   ## Function to download the data from Open Data Zürich
@@ -75,26 +110,20 @@ get_data <- function() {
     mutate(ListeBezeichnung = gsub(".*– ", "", ListeBezeichnung))
   
   # Combine Downloads
-  df_det <- bind_rows(data_result_22_14, data10) %>% 
-    mutate(ListeBezeichnung = trimws(ListeBezeichnung),
-           Vorname = trimws(Vorname),
-           Nachname = trimws(Nachname),
-           Wahlkreis = trimws(Wahlkreis)) 
+  df_details <- bind_rows(data_result_22_14, data10) 
   
   rm(data_result_22_14, data10)
   
   ### Data Manipulation
+  
+  # to avoid duplicates in main table, just select a subset to join
+  df_details_for_join <- df_details %>% 
+    select(Name, Wahljahr, Wahlkreis, ListeBezeichnung, Wahlresultat)
   data <- data_cand %>%
-    left_join(df_det, by = c("Wahljahr", 
-                             "Vorname", 
-                             "Nachname", 
+    left_join(df_details_for_join, by = c("Wahljahr", 
+                             "Name",
                              "Wahlkreis", 
                              "ListeBezeichnung")) %>% 
-    select(-Liste ,-Kand, -Kand, -A) %>%
-    mutate(
-      Name = paste(Vorname, Nachname, sep = " "),
-      Wahlkreis = paste("Kreis", Wahlkreis, sep = " ")
-    ) %>% 
     mutate(WahlkreisSort = case_when(
       Wahlkreis == "Kreis 1 + 2" ~ 1,
       Wahlkreis == "Kreis 3" ~ 2,
@@ -107,36 +136,14 @@ get_data <- function() {
       Wahlkreis == "Kreis 12" ~ 9
     )) %>% 
     arrange(Wahljahr, WahlkreisSort) %>% 
-    mutate(Wahlresultat = case_when(
-      Wahlresultat == "nicht gewaehlt" ~ "nicht gewählt",
-      Wahlresultat == "gewaehlt" ~ "gewählt",
-      TRUE ~Wahlresultat
-    )) %>% 
-    mutate(Alter = Wahljahr - GebJ) %>% 
-    mutate(StimmeVeraeListe = str_remove_all(Var, "stim_verae_wl_")) %>% 
-    mutate(StimmeVeraeListe = case_when(
-      StimmeVeraeListe == "Gruene" ~ "Grüne",
-      StimmeVeraeListe == "evp_bdp" ~ "EVP/BDP",
-      StimmeVeraeListe == "DieMitte" ~ "Die Mitte",
-      StimmeVeraeListe == "ILoveZH" ~ "I Love ZH",
-      TRUE ~ StimmeVeraeListe
-    )) %>% 
-    mutate(
-      `Anteil Stimmen aus veränderten Listen` = as.character(
-        round(100*(1 - (part_eig_stim_unv_wl/total_stim)), 1))
-    ) %>% 
-    mutate(
-      `Anteil Stimmen aus veränderten Listen` = paste(`Anteil Stimmen aus veränderten Listen`, 
-                                                      "%", sep = " ")
-    ) %>% 
-    rename(Liste = ListeKurzbez,
-           `Anzahl Stimmen` = total_stim,
-           `Parteieigene Stimmen` = part_eig_stim,
-           `Parteifremde Stimmen` = part_frmd_stim
-    ) 
+    mutate(Alter = Wahljahr - GebJ)   %>% 
+    rename(Liste = ListeKurzbez) 
+  
+  return(list("df_main" = data_cand, "df_details" = df_details))
 }
 
 data <- get_data()
 
-write.fst(data, here::here("data", "data_KALI.fst"))
+write.fst(data[["df_main"]], here::here("data", "data_KALI_main.fst"))
+write.fst(data[["df_details"]], here::here("data", "data_KALI_details.fst"))
 

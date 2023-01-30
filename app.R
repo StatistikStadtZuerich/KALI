@@ -16,8 +16,9 @@ library(shinyjs)
 ssz_icons <- icon_set("www/icons/")
 
 # Source Prepared Data
-data <- read.fst(file.path("data", "data_KALI.fst"))
-unique_wj <- sort(unique(data$Wahljahr))
+df_main <- read.fst(file.path("data", "data_KALI_main.fst"))
+df_details <- read.fst(file.path("data", "data_KALI_details.fst"))
+unique_wj <- sort(unique(df_main$Wahljahr))
 
 # Source Export Excel
 source("R/ssz_download_excel.R", encoding = "UTF-8")
@@ -189,7 +190,7 @@ server <- function(input, output, session) {
     observeEvent(input$select_year, {
       new_choices <-  c(
         "Alle Listen",
-        unique(data[data$Wahljahr == input$select_year, ]$ListeBezeichnung)
+        unique(df_main[df_main$Wahljahr == input$select_year, ]$ListeBezeichnung)
         )
       updateSelectInput(session = session,
                         inputId = "select_liste",
