@@ -10,6 +10,7 @@ library(htmltools)
 library(icons)
 library(zuericssstyle)
 library(fst)
+library(shinyjs)
 
 # Set the Icon path
 ssz_icons <- icon_set("www/icons/")
@@ -38,6 +39,8 @@ ui <- fluidPage(
     
     # include appropriate dependencies
     dependencies,
+    
+    useShinyjs(),
     
     # Sidebar: Input widgets are placed here
     sidebarLayout(
@@ -286,6 +289,8 @@ server <- function(input, output, session) {
                    req(input$ActionButtonId > 0)
                    
                    if (input$show_details > 0) {
+                     shinyjs::show("sszvis-chart")
+                     
                      person <- filtered_data() %>%
                        filter(Name == data_person()$Name) %>% 
                        filter(Wahlkreis == data_person()$Wahlkreis) %>% 
@@ -295,10 +300,12 @@ server <- function(input, output, session) {
                        arrange(desc(Value))
                      
                      update_data(person)   
+
                    } else {
                     # sendCustomMessage requires a message argument to be defined,
                     # even though it's not needed in this case.
-                     session$sendCustomMessage(type = "clear_chart", message="")
+                     #print("chart should go away")
+                     shinyjs::hide("sszvis-chart")
                    }
                   })
     
