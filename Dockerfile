@@ -9,7 +9,8 @@ COPY R/dependencies.R R/dependencies.R
 COPY www/script.js www/script.js
 COPY R/get_reactables_candidates.R R/get_reactables_candidates.R
 COPY www/logo_stzh_stat_sw_pos_1.png www/logo_stzh_stat_sw_pos_1.png
-COPY data/data_KALI.fst data/data_KALI.fst
+COPY data/data_KALI_main.fst data/data_KALI_main.fst
+COPY data/data_KALI_details.fst data/data_KALI_details.fst
 COPY www/sszThemeShiny.css www/sszThemeShiny.css
 COPY www/KALI.css www/KALI.css
 COPY www/Titelblatt.xlsx www/Titelblatt.xlsx
