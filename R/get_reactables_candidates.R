@@ -28,7 +28,6 @@ get_reactable_candidates <- function(df) {
             ),
             outlined = TRUE,
             highlight = TRUE,
-            defaultPageSize = 5,
             onClick = JS("function(rowInfo, column) {
             
             // Send the click event to Shiny, which will be available in input$show_details

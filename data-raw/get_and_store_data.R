@@ -106,7 +106,7 @@ get_data <- function() {
       Wahlkreis == "Kreis 11" ~ 8,
       Wahlkreis == "Kreis 12" ~ 9
     )) %>% 
-    arrange(Wahljahr, Wahlkreis) %>% 
+    arrange(Wahljahr, WahlkreisSort) %>% 
     mutate(Wahlresultat = case_when(
       Wahlresultat == "nicht gewaehlt" ~ "nicht gewählt",
       Wahlresultat == "gewaehlt" ~ "gewählt",
