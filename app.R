@@ -302,9 +302,7 @@ server <- function(input, output, session) {
                      update_data(person)   
 
                    } else {
-                    # sendCustomMessage requires a message argument to be defined,
-                    # even though it's not needed in this case.
-                     #print("chart should go away")
+                    # hide the chart (sending empty custom message does not work with iframe resizer on ssz website)
                      shinyjs::hide("sszvis-chart")
                    }
                   })
