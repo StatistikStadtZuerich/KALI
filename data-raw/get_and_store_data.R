@@ -118,8 +118,13 @@ get_data <- function() {
   
   # to avoid duplicates in main table, just select a subset to join
   df_details_for_join <- df_details %>% 
-    select(Name, Wahljahr, Wahlkreis, ListeBezeichnung, Wahlresultat)
-  data <- data_cand %>%
+    select(Name, Wahljahr, Wahlkreis, ListeBezeichnung, Wahlresultat,
+           `Anzahl Stimmen`, `Parteieigene Stimmen`, 
+           `Parteifremde Stimmen`,
+           `Anteil Stimmen aus veränderten Listen`) %>% 
+    unique()
+  
+  df_main <- data_cand %>%
     left_join(df_details_for_join, by = c("Wahljahr", 
                              "Name",
                              "Wahlkreis", 
@@ -139,7 +144,11 @@ get_data <- function() {
     mutate(Alter = Wahljahr - GebJ)   %>% 
     rename(Liste = ListeKurzbez) 
   
-  return(list("df_main" = data_cand, "df_details" = df_details))
+  # with updated data (2026): check if this joined df has NA, in that case
+  # there is probably a mismatch in names or someone missing
+  # currently known missing results: Jürg Nef, EVP, 2018
+  
+  return(list("df_main" = df_main, "df_details" = df_details))
 }
 
 data <- get_data()

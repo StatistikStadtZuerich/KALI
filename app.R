@@ -200,7 +200,7 @@ server <- function(input, output, session) {
     
     # Filter data according to inputs
     filtered_data <- reactive({
-      data %>%
+      df_main %>%
         filter(Wahljahr == input$select_year) %>%
         filter(if (input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case = TRUE) else TRUE) %>%
         filter(if (input$gender_radio_button != "Alle") Geschlecht == input$gender_radio_button else TRUE) %>%
@@ -238,13 +238,13 @@ server <- function(input, output, session) {
                    `Anzahl Stimmen`, `Parteieigene Stimmen`, 
                    `Parteifremde Stimmen`,
                    `Anteil Stimmen aus veränderten Listen`) %>%
-            unique() %>%
             mutate(ID = row_number()) %>%
             filter(ID == input$show_details) %>% 
             select(-ID)
         person
 
-    })
+    }) %>% 
+      bindEvent(input$show_details)
     
     data_download <- reactive({
       req(input$show_details > 0)
@@ -253,7 +253,6 @@ server <- function(input, output, session) {
                    Wahlresultat, `Anzahl Stimmen`, `Parteieigene Stimmen`, 
                    `Parteifremde Stimmen`,
                    `Anteil Stimmen aus veränderten Listen`) %>%
-            unique() %>%
             mutate(ID = row_number()) %>%
             filter(ID == input$show_details) %>% 
             select(-ID) %>% 
@@ -261,7 +260,8 @@ server <- function(input, output, session) {
                    -Geschlecht, -Beruf, -Wahlkreis, -Liste)
         person
         
-    })
+    }) %>% 
+      bindEvent(input$show_details)
 
     # Render title of selected person
     output$nameCandidate <- renderText({
@@ -292,7 +292,12 @@ server <- function(input, output, session) {
                    if (input$show_details > 0) {
                      shinyjs::show("sszvis-chart")
                      
-                     person <- filtered_data() %>%
+                     person <- df_details %>%
+                       #filter the equivalent of filtered_dat that is not also filtered below
+                       filter(Wahljahr == input$select_year) %>%
+                       #filter(if (input$suchfeld != "") grepl(input$suchfeld, Name, ignore.case = TRUE) else TRUE) %>%
+                       filter(if (input$wahlstatus_radio_button != "Alle") Wahlresultat == input$wahlstatus_radio_button else TRUE) %>% 
+                       
                        filter(Name == data_person()$Name) %>% 
                        filter(Wahlkreis == data_person()$Wahlkreis) %>% 
                        filter(ListeBezeichnung == data_person()$ListeBezeichnung) %>% 
