@@ -8,5 +8,6 @@ rsconnect::deployApp(forceUpdate = TRUE,
                      appFiles = c(
                        "R",
                        "www",
-                       "app.R"
+                       "app.R",
+                       "data"
                      ))
