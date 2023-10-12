@@ -137,7 +137,12 @@ ui <- fluidPage(
                 p("Für Detailinformationen zu den Ergebnissen einzelner Kandidierenden wählen Sie eine Zeile aus."),
                 
                 # Example Table Output 
-                reactableOutput("table"),
+                shinycssloaders::withSpinner(
+                  reactableOutput("table"),
+                  type = 7,
+                  color = "#0F05A0"
+                ),
+                
             ),
             
             # initialise hidden variable for row selection, to be used with JS function in reactable
@@ -150,7 +155,11 @@ ui <- fluidPage(
             htmlOutput("nameCandidate"),
             
             # table with info about selected candidate - requires show_details > 0
-            reactableOutput("tableCand"),
+            shinycssloaders::withSpinner(
+              reactableOutput("tableCand"),
+              type = 7,
+              color = "#0F05A0"
+            ),
             
             # Only show plot if tableCand is also shown
             conditionalPanel(
