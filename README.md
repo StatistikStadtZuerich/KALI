@@ -14,7 +14,7 @@ flowchart LR;
   f4[F4 select electoral district]:::filter --> button
   f5[F5 select party list]:::filter --> button
   f6[F6 select electoral status]:::filter --> button
-  button --> output1[(filtered data = \nF1 + F2 + F3 + F4 + F5)]:::data
+  button --> output1[(filtered data = \nF1 + F2 + F3 + F4 + F5 + F6)]:::data
   output1 --> results1[[Resultat candidates]]:::result
   results1 --> f7[F7 select candidate]:::filter
   f7 --> output2[(output1 + F7)]:::data
