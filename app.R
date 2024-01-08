@@ -15,9 +15,12 @@ library(shinyjs)
 # Set the Icon path
 ssz_icons <- icon_set("www/icons/")
 
-# Source Prepared Data
-df_main <- read.fst(file.path("data", "data_KALI_main.fst"))
-df_details <- read.fst(file.path("data", "data_KALI_details.fst"))
+# Source Function that gets Data
+source("R/get_data.R")
+
+# Make Data Frames
+df_main <- data[["df_main"]]
+df_details <- data[["df_details"]]
 unique_wj <- sort(unique(df_main$Wahljahr))
 
 # Source Export Excel
