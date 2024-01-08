@@ -152,7 +152,3 @@ get_data <- function() {
 }
 
 data <- get_data()
-
-write.fst(data[["df_main"]], here::here("data", "data_KALI_main.fst"))
-write.fst(data[["df_details"]], here::here("data", "data_KALI_details.fst"))
-
