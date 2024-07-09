@@ -14,8 +14,8 @@ library(zuericssstyle)
 # Set the Icon path
 ssz_icons <- icon_set("www/icons/")
 
-# Source all functions
-purrr::map(list.files("R/", full.names = TRUE), source)
+# Source all functions - done automatically in the newer shiny versions
+# purrr::map(list.files("R/", full.names = TRUE), source)
 
 # get data and make Data Frames
 data <- get_data()
