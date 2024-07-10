@@ -14,22 +14,14 @@ library(zuericssstyle)
 # Set the Icon path
 ssz_icons <- icon_set("www/icons/")
 
-# Source Function that gets Data
-source("R/get_data.R")
+# Source all functions - done automatically in the newer shiny versions
+# purrr::map(list.files("R/", full.names = TRUE), source)
 
-# Make Data Frames
+# get data and make Data Frames
+data <- get_data()
 df_main <- data[["df_main"]]
 df_details <- data[["df_details"]]
 unique_wj <- sort(unique(df_main$Wahljahr))
-
-# Source Export Excel
-source("R/ssz_download_excel.R", encoding = "UTF-8")
-
-# source functions to prepare reactables
-source("R/get_reactables_candidates.R")
-
-# Source Dependencies
-source("R/dependencies.R", encoding = "UTF-8")
 
 dependencies <- getDependencies()
 
@@ -189,14 +181,6 @@ ui <- fluidPage(
 # Server function
 server <- function(input, output, session) {
     
-    # function to send updated data to json for D3 chart
-    update_data <- function(data) {
-        session$sendCustomMessage(
-            type = "update_data",
-            message = jsonlite::toJSON(data)
-        )
-    }
-    
     # update selection of lists based on selected year
     observeEvent(input$select_year, {
       new_choices <-  c(
@@ -316,7 +300,7 @@ server <- function(input, output, session) {
                        filter(!is.na(Value) & Value > 0) %>%
                        arrange(desc(Value))
                      
-                     update_data(person)   
+                     update_chart(person, "update_data", session)
 
                    } else {
                     # hide the chart (sending empty custom message does not work with iframe resizer on ssz website)

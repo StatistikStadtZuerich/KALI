@@ -150,5 +150,3 @@ get_data <- function() {
   
   return(list("df_main" = df_main, "df_details" = df_details))
 }
-
-data <- get_data()
